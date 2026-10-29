@@ -78,6 +78,11 @@ Valores permitidos para estados:
 
 ## 3. Historial de cambios
 
+### 2026-10-29 — Publicación del proyecto en GitHub (`AndresAguiarMarmol/momentos-cookie`)
+- Creado el repositorio público en GitHub: [https://github.com/AndresAguiarMarmol/momentos-cookie](https://github.com/AndresAguiarMarmol/momentos-cookie).
+- Historial de Git saneado e inicializado limpiamente en la rama `main` conteniendo exclusivamente el código fuente, especificaciones SDD, pruebas y assets de Momentos Cookie (eliminados vestigios del proyecto anterior).
+- Añadido archivo [.gitignore](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/.gitignore) estándar y sincronización completa (`git push -u origin main`).
+
 ### 2026-10-29 — Corrección de conflicto léxico global en navegador y arranque resiliente
 - **Diagnóstico:** En entorno de navegador, `storage.js` y `ui.js` declaraban en el ámbito de script global la misma constante léxica `const ProductionHelper`. Esto provocaba un `Uncaught SyntaxError: Identifier 'ProductionHelper' has already been declared`, interrumpiendo la carga de `ui.js` y congelando la inicialización del DOM.
 - **Solución implementada:**
