@@ -40,26 +40,64 @@ function generarTicketEntregaHtml(order, settings = {}) {
   const pago = formatearResumenPagoTicket(order.payment, currencySymbol);
   const isCombo = order.orderType === 'combo';
 
-  let productoHtml = '';
-  if (isCombo) {
-    productoHtml = `
-      <div style="margin-bottom: 8px;">
-        <div style="font-weight: bold; font-size: 14px;">${order.details?.comboName || 'Combo Especial'}</div>
-        <div style="font-size: 12px; color: #555;">
-          ${order.details?.quantity || 1} combo(s) · ${order.details?.cookiesCount || 6} galletas c/u
+  const items = (Array.isArray(order.items) && order.items.length > 0)
+    ? order.items
+    : [
+        isCombo
+          ? {
+              type: 'combo',
+              comboName: order.details?.comboName || 'Combo Especial',
+              quantity: order.details?.quantity || 1,
+              cookiesCount: order.details?.cookiesCount || 6,
+              packaging: order.details?.packaging || 'Caja decorativa',
+              hasPaintKit: Boolean(order.details?.hasPaintKit),
+              unitPrice: order.details?.unitPrice || 0,
+              subtotal: order.details?.subtotal || 0
+            }
+          : {
+              type: 'individual',
+              flavor: order.details?.flavor || 'Galletas Artesanales',
+              quantity: order.details?.quantity || 12,
+              unitPrice: order.details?.unitPrice || 0,
+              subtotal: order.details?.subtotal || 0
+            }
+      ];
+
+  const productoHtml = items.map((it, idx) => {
+    const isComboItem = it.type === 'combo';
+    const subtotalFormatted = formatearMonedaTicket(
+      it.subtotal !== undefined ? it.subtotal : (Number(it.quantity) || 1) * (Number(it.unitPrice) || 0),
+      currencySymbol
+    );
+    const borderStyle = idx > 0 ? 'border-top: 1px dotted #e5e5e5; padding-top: 6px; margin-top: 6px;' : '';
+
+    if (isComboItem) {
+      return `
+        <div style="margin-bottom: 6px; ${borderStyle}">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-weight: bold; font-size: 13px;">${it.comboName || 'Combo Especial'}</span>
+            <span style="font-weight: bold; font-size: 13px;">${subtotalFormatted}</span>
+          </div>
+          <div style="font-size: 12px; color: #555;">
+            ${it.quantity || 1} combo(s) · ${it.cookiesCount || 6} galletas c/u · Empaque: ${it.packaging || 'Caja decorativa'}
+          </div>
+          ${it.hasPaintKit ? '<div style="font-size: 11px; font-weight: bold; color: #9A3412; margin-top: 2px;">🎨 Incluye kit de pintura comestible y pinceles</div>' : ''}
         </div>
-        <div style="font-size: 12px; color: #555;">Empaque: ${order.details?.packaging || 'Caja decorativa'}</div>
-        ${order.details?.hasPaintKit ? '<div style="font-size: 11px; font-weight: bold; color: #9A3412; margin-top: 2px;">🎨 Incluye kit de pintura comestible y pinceles</div>' : ''}
-      </div>
-    `;
-  } else {
-    productoHtml = `
-      <div style="margin-bottom: 8px;">
-        <div style="font-weight: bold; font-size: 14px;">${order.details?.flavor || 'Galletas Artesanales'}</div>
-        <div style="font-size: 12px; color: #555;">${order.details?.quantity || 12} unidades individuales</div>
-      </div>
-    `;
-  }
+      `;
+    } else {
+      return `
+        <div style="margin-bottom: 6px; ${borderStyle}">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-weight: bold; font-size: 13px;">${it.flavor || 'Galletas Artesanales'}</span>
+            <span style="font-weight: bold; font-size: 13px;">${subtotalFormatted}</span>
+          </div>
+          <div style="font-size: 12px; color: #555;">
+            ${it.quantity || 12} unidades individuales (${formatearMonedaTicket(it.unitPrice || 0, currencySymbol)} c/u)
+          </div>
+        </div>
+      `;
+    }
+  }).join('');
 
   let notasHtml = '';
   if (order.notes && order.notes.trim()) {

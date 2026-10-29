@@ -36,27 +36,48 @@ function consolidarProduccion(pedidos = [], { rango = 'activos', hoy = new Date(
   let totalKitsPintura = 0;
 
   for (const orden of pedidosProduccion) {
-    if (orden.orderType === 'combo') {
-      const nombre = (orden.details && orden.details.comboName) || 'Combo Especial';
-      const cantCombos = Math.max(1, Number(orden.details && orden.details.quantity) || 1);
-      const galletasPorCombo = Math.max(1, Number(orden.details && orden.details.cookiesCount) || 6);
-      const subtotalGalletas = cantCombos * galletasPorCombo;
+    const items = (Array.isArray(orden.items) && orden.items.length > 0)
+      ? orden.items
+      : [
+          orden.orderType === 'combo'
+            ? {
+                type: 'combo',
+                comboName: (orden.details && orden.details.comboName) || 'Combo Especial',
+                quantity: Math.max(1, Number(orden.details && orden.details.quantity) || 1),
+                cookiesCount: Math.max(1, Number(orden.details && orden.details.cookiesCount) || 6),
+                hasPaintKit: Boolean(orden.details && orden.details.hasPaintKit),
+                packaging: (orden.details && orden.details.packaging) || 'Caja decorativa'
+              }
+            : {
+                type: 'individual',
+                flavor: (orden.details && orden.details.flavor) || 'Galletas Artesanales',
+                quantity: Math.max(0, Number(orden.details && orden.details.quantity) || 0)
+              }
+        ];
 
-      combos[nombre] = (combos[nombre] || 0) + cantCombos;
-      totalGalletas += subtotalGalletas;
+    for (const item of items) {
+      if (item.type === 'combo') {
+        const nombre = item.comboName || 'Combo Especial';
+        const cantCombos = Math.max(1, Number(item.quantity) || 1);
+        const galletasPorCombo = Math.max(1, Number(item.cookiesCount) || 6);
+        const subtotalGalletas = cantCombos * galletasPorCombo;
 
-      if (orden.details && orden.details.hasPaintKit) {
-        totalKitsPintura += cantCombos;
+        combos[nombre] = (combos[nombre] || 0) + cantCombos;
+        totalGalletas += subtotalGalletas;
+
+        if (item.hasPaintKit) {
+          totalKitsPintura += cantCombos;
+        }
+
+        const empaque = item.packaging || 'Caja decorativa';
+        empaques[empaque] = (empaques[empaque] || 0) + cantCombos;
+      } else {
+        const sabor = item.flavor || 'Galletas Artesanales';
+        const cant = Math.max(0, Number(item.quantity) || 0);
+
+        sabores[sabor] = (sabores[sabor] || 0) + cant;
+        totalGalletas += cant;
       }
-
-      const empaque = (orden.details && orden.details.packaging) || 'Caja decorativa';
-      empaques[empaque] = (empaques[empaque] || 0) + cantCombos;
-    } else {
-      const sabor = (orden.details && orden.details.flavor) || 'Galletas Artesanales';
-      const cant = Math.max(0, Number(orden.details && orden.details.quantity) || 0);
-
-      sabores[sabor] = (sabores[sabor] || 0) + cant;
-      totalGalletas += cant;
     }
   }
 

@@ -29,45 +29,111 @@ function validateOrderInput({ customerName, phone, deliveryDate }) {
  * Extrae y formatea un objeto de Pedido a partir de datos del formulario
  */
 function extractOrderFromInputs(inputs) {
-  const isCombo = inputs.orderType === 'combo';
   const calcSubtotal = OrdersHelper ? OrdersHelper.calcularSubtotal : (q, p) => q * p;
-  const calcSaldo = OrdersHelper ? OrdersHelper.calcularSaldoPendiente : (t, a) => ({ total: t, abono: a, saldo: t - a });
+  const calcSaldo = OrdersHelper ? OrdersHelper.calcularSaldoPendiente : (t, a, st) => {
+    const tot = Math.max(0, Number(t) || 0);
+    if (st === 'Pagado total') return { total: tot, abono: tot, saldo: 0 };
+    if (st === 'Abono/Seña') {
+      const ab = Math.min(tot, Math.max(0, Number(a) || 0));
+      return { total: tot, abono: ab, saldo: tot - ab };
+    }
+    return { total: tot, abono: 0, saldo: tot };
+  };
 
-  let quantity = 0;
-  let unitPrice = 0;
-  let subtotal = 0;
+  let items = [];
   let details = {};
+  let subtotal = 0;
+  let orderType = inputs.orderType || 'individual';
 
-  if (isCombo) {
-    quantity = Math.max(1, Number(inputs.comboQuantity) || 1);
-    unitPrice = Math.max(0, Number(inputs.comboPrice) || 0);
-    subtotal = calcSubtotal(quantity, unitPrice);
+  if (Array.isArray(inputs.items) && inputs.items.length > 0) {
+    items = inputs.items.map((it, idx) => {
+      const type = it.type || (it.comboName ? 'combo' : 'individual');
+      const cant = Math.max(1, Number(it.quantity) || 1);
+      const precio = Math.max(0, Number(it.unitPrice) || 0);
+      const sub = it.subtotal !== undefined ? Number(it.subtotal) : calcSubtotal(cant, precio);
+      subtotal += sub;
 
+      return {
+        id: it.id || `item-${idx + 1}`,
+        type,
+        flavor: it.flavor || '',
+        comboName: it.comboName || '',
+        cookiesCount: Number(it.cookiesCount) || (type === 'combo' ? 6 : 1),
+        packaging: it.packaging || '',
+        hasPaintKit: Boolean(it.hasPaintKit),
+        quantity: cant,
+        unitPrice: precio,
+        subtotal: sub
+      };
+    });
+
+    const hasIndividual = items.some(it => it.type === 'individual');
+    const hasCombo = items.some(it => it.type === 'combo');
+    if (hasIndividual && hasCombo) {
+      orderType = 'mixto';
+    } else if (hasCombo) {
+      orderType = 'combo';
+    } else {
+      orderType = 'individual';
+    }
+
+    const primer = items[0] || {};
     details = {
-      flavor: '',
-      comboName: inputs.comboName || 'Combo Especial',
-      cookiesCount: Math.max(1, Number(inputs.comboCookiesCount) || 6),
-      packaging: inputs.comboPackaging || 'Caja decorativa con lazo',
-      hasPaintKit: Boolean(inputs.comboHasPaintKit),
-      quantity,
-      unitPrice,
-      subtotal
+      flavor: primer.flavor || '',
+      comboName: primer.comboName || '',
+      cookiesCount: primer.cookiesCount || 1,
+      packaging: primer.packaging || '',
+      hasPaintKit: primer.hasPaintKit || false,
+      quantity: primer.quantity || 1,
+      unitPrice: primer.unitPrice || 0,
+      subtotal: primer.subtotal || 0
     };
   } else {
-    quantity = Math.max(1, Number(inputs.individualQuantity) || 1);
-    unitPrice = Math.max(0, Number(inputs.individualPrice) || 0);
-    subtotal = calcSubtotal(quantity, unitPrice);
+    const isCombo = inputs.orderType === 'combo';
+    let quantity = 0;
+    let unitPrice = 0;
 
-    details = {
-      flavor: inputs.individualFlavor || 'Galletas Artesanales',
-      comboName: '',
-      cookiesCount: quantity,
-      packaging: 'Bolsa decorativa',
-      hasPaintKit: false,
-      quantity,
-      unitPrice,
-      subtotal
-    };
+    if (isCombo) {
+      quantity = Math.max(1, Number(inputs.comboQuantity) || 1);
+      unitPrice = Math.max(0, Number(inputs.comboPrice) || 0);
+      subtotal = calcSubtotal(quantity, unitPrice);
+
+      details = {
+        flavor: '',
+        comboName: inputs.comboName || 'Combo Especial',
+        cookiesCount: Math.max(1, Number(inputs.comboCookiesCount) || 6),
+        packaging: inputs.comboPackaging || 'Caja decorativa con lazo',
+        hasPaintKit: Boolean(inputs.comboHasPaintKit),
+        quantity,
+        unitPrice,
+        subtotal
+      };
+      items = [{
+        id: 'item-1',
+        type: 'combo',
+        ...details
+      }];
+    } else {
+      quantity = Math.max(1, Number(inputs.individualQuantity) || 1);
+      unitPrice = Math.max(0, Number(inputs.individualPrice) || 0);
+      subtotal = calcSubtotal(quantity, unitPrice);
+
+      details = {
+        flavor: inputs.individualFlavor || 'Galletas Artesanales',
+        comboName: '',
+        cookiesCount: quantity,
+        packaging: 'Bolsa decorativa',
+        hasPaintKit: false,
+        quantity,
+        unitPrice,
+        subtotal
+      };
+      items = [{
+        id: 'item-1',
+        type: 'individual',
+        ...details
+      }];
+    }
   }
 
   const pagoInfo = calcSaldo(subtotal, inputs.depositAmount, inputs.paymentStatus);
@@ -84,7 +150,8 @@ function extractOrderFromInputs(inputs) {
       deliveryDate: inputs.deliveryDate || '',
       deliveryTime: inputs.deliveryTime || ''
     },
-    orderType: inputs.orderType || 'individual',
+    orderType,
+    items,
     details,
     notes: (inputs.notes || '').trim(),
     status: inputs.orderStatus || 'Pendiente',
@@ -168,7 +235,52 @@ function renderOrderCardHtml(order, options = {}) {
   }
 
   let productoHtml = '';
-  if (order.orderType === 'combo') {
+  const ord = (OrdersHelper && typeof OrdersHelper.normalizeOrder === 'function') ? OrdersHelper.normalizeOrder(order) : order;
+  const items = ord.items || [];
+
+  if (items.length > 1) {
+    const listado = items.map(it => {
+      const cant = Number(it.quantity) || 1;
+      const nombre = it.type === 'combo' ? (it.comboName || 'Combo Especial') : (it.flavor || 'Galletas Artesanales');
+      return `<li class="truncate">• <strong>${cant}x</strong> ${nombre}</li>`;
+    }).join('');
+
+    const totalGalletas = items.reduce((acc, it) => {
+      const q = Number(it.quantity) || 1;
+      const c = it.type === 'combo' ? (Number(it.cookiesCount) || 6) : 1;
+      return acc + (q * c);
+    }, 0);
+
+    productoHtml = `
+      <div class="text-xs text-cocoa-900">
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-bold text-cookie-700 text-sm">${items.length} ítems en el pedido</span>
+          <span class="text-[11px] font-semibold bg-cookie-100 text-cookie-800 px-2 py-0.5 rounded-full">${totalGalletas} galletas</span>
+        </div>
+        <ul class="text-[11px] text-[#5A4A42] space-y-0.5 bg-[#FAF7F2] p-2 rounded-lg border border-[#E8E1D7]">
+          ${listado}
+        </ul>
+      </div>
+    `;
+  } else if (items.length === 1 && items[0].type === 'combo') {
+    const it = items[0];
+    productoHtml = `
+      <div class="text-xs text-cocoa-900">
+        <span class="font-bold text-cookie-700 block text-sm">${it.comboName || 'Combo Especial'}</span>
+        <span class="text-[#7A6A60]">${it.quantity || 1} combo(s) · ${it.cookiesCount || 6} galletas c/u</span>
+        <div class="text-[11px] text-[#7A6A60] mt-0.5">Empaque: ${it.packaging || 'Caja decorativa'}</div>
+        ${it.hasPaintKit ? '<span class="inline-block mt-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">🎨 Kit de pintura comestible incluido</span>' : ''}
+      </div>
+    `;
+  } else if (items.length === 1) {
+    const it = items[0];
+    productoHtml = `
+      <div class="text-xs text-cocoa-900">
+        <span class="font-bold text-cookie-700 block text-sm">${it.flavor || 'Galletas Artesanales'}</span>
+        <span class="text-[#7A6A60]">${it.quantity || 12} unidades individuales</span>
+      </div>
+    `;
+  } else if (order.orderType === 'combo') {
     productoHtml = `
       <div class="text-xs text-cocoa-900">
         <span class="font-bold text-cookie-700 block text-sm">${order.details?.comboName || 'Combo Especial'}</span>
@@ -346,6 +458,7 @@ function openDetailModal(order) {
   const modal = document.getElementById('modal-detail');
   if (!modal) return;
 
+  const ord = (OrdersHelper && typeof OrdersHelper.normalizeOrder === 'function') ? OrdersHelper.normalizeOrder(order) : order;
   const format = OrdersHelper ? OrdersHelper.formatearMoneda : m => `$${m}`;
 
   document.getElementById('detail-order-id').textContent = order.id;
@@ -393,23 +506,39 @@ function openDetailModal(order) {
         </div>
       </div>
 
-      <div class="space-y-2 border-t border-[#F0EAE1] pt-3">
-        <h4 class="font-bold text-xs uppercase text-cookie-700 tracking-wider">Detalles del Producto</h4>
-        ${isCombo ? `
-          <div class="space-y-1">
-            <div class="font-bold text-sm text-cocoa-900">${order.details?.comboName || 'Combo Especial'}</div>
-            <div class="text-xs text-[#7A6A60]">${order.details?.quantity} combo(s) · ${order.details?.cookiesCount} galletas incluidas por combo</div>
-            <div class="text-xs text-[#7A6A60]">Empaque: ${order.details?.packaging}</div>
-            <div class="text-xs font-semibold ${order.details?.hasPaintKit ? 'text-amber-700' : 'text-gray-500'}">
-              ${order.details?.hasPaintKit ? '🎨 Incluye kit de pintura comestible y pinceles' : 'Sin kit de pintura'}
-            </div>
-          </div>
-        ` : `
-          <div class="space-y-1">
-            <div class="font-bold text-sm text-cocoa-900">${order.details?.flavor || 'Galletas Artesanales'}</div>
-            <div class="text-xs text-[#7A6A60]">${order.details?.quantity} unidades individuales</div>
-          </div>
-        `}
+      <div class="space-y-3 border-t border-[#F0EAE1] pt-3">
+        <h4 class="font-bold text-xs uppercase text-cookie-700 tracking-wider">Artículos del Pedido (${(ord.items || []).length})</h4>
+        ${(ord.items || []).map((it, idx) => {
+          const isComboItem = it.type === 'combo';
+          const subtotalFormatted = format(it.subtotal !== undefined ? it.subtotal : (Number(it.quantity) || 1) * (Number(it.unitPrice) || 0));
+          const borderStyle = idx > 0 ? 'border-t border-[#EDE5DA] pt-2.5 mt-2.5' : '';
+
+          if (isComboItem) {
+            return `
+              <div class="space-y-1 ${borderStyle}">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-sm text-cocoa-900">${it.comboName || 'Combo Especial'}</span>
+                  <span class="font-bold text-xs text-cookie-700">${subtotalFormatted}</span>
+                </div>
+                <div class="text-xs text-[#7A6A60]">${it.quantity || 1} combo(s) · ${it.cookiesCount || 6} galletas c/u (${format(it.unitPrice || 0)} c/u)</div>
+                <div class="text-xs text-[#7A6A60]">Empaque: ${it.packaging || 'Caja decorativa'}</div>
+                <div class="text-xs font-semibold ${it.hasPaintKit ? 'text-amber-700' : 'text-gray-500'}">
+                  ${it.hasPaintKit ? '🎨 Incluye kit de pintura comestible y pinceles' : 'Sin kit de pintura'}
+                </div>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="space-y-1 ${borderStyle}">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-sm text-cocoa-900">${it.flavor || 'Galletas Artesanales'}</span>
+                  <span class="font-bold text-xs text-cookie-700">${subtotalFormatted}</span>
+                </div>
+                <div class="text-xs text-[#7A6A60]">${it.quantity || 12} unidades individuales (${format(it.unitPrice || 0)} c/u)</div>
+              </div>
+            `;
+          }
+        }).join('')}
       </div>
 
       ${order.notes ? `
@@ -665,67 +794,288 @@ function switchView(viewId) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function setOrderType(type) {
+let currentOrderItems = [];
+
+function createDefaultItem(type = 'individual', idSuffix = Date.now()) {
+  const isCombo = type === 'combo';
+  return {
+    id: `item-${idSuffix}`,
+    type: isCombo ? 'combo' : 'individual',
+    flavor: isCombo ? '' : 'Vainilla Real Glaseada',
+    comboName: isCombo ? 'Kit Especial Dulce' : '',
+    cookiesCount: isCombo ? 6 : 1,
+    packaging: isCombo ? 'Caja decorativa con lazo' : 'Bolsa celofán',
+    hasPaintKit: isCombo ? true : false,
+    quantity: isCombo ? 1 : 12,
+    unitPrice: isCombo ? 14500 : 1200,
+    subtotal: isCombo ? 14500 : 14400
+  };
+}
+
+function renderOrderItems() {
   if (typeof document === 'undefined') return;
+  const container = document.getElementById('order-items-list');
+  if (!container) return;
 
-  const btnIndividual = document.getElementById('btn-mode-individual');
-  const btnCombo = document.getElementById('btn-mode-combo');
-  const fieldsIndividual = document.getElementById('fields-individual');
-  const fieldsCombo = document.getElementById('fields-combo');
-
-  const radioInd = document.querySelector('input[name="orderType"][value="individual"]');
-  const radioCombo = document.querySelector('input[name="orderType"][value="combo"]');
-
-  if (type === 'combo') {
-    if (radioCombo) radioCombo.checked = true;
-    if (btnCombo) {
-      btnCombo.classList.add('active');
-      btnCombo.classList.remove('text-[#6B5A50]');
-    }
-    if (btnIndividual) {
-      btnIndividual.classList.remove('active');
-      btnIndividual.classList.add('text-[#6B5A50]');
-    }
-    if (fieldsIndividual) fieldsIndividual.classList.add('hidden');
-    if (fieldsCombo) fieldsCombo.classList.remove('hidden');
-  } else {
-    if (radioInd) radioInd.checked = true;
-    if (btnIndividual) {
-      btnIndividual.classList.add('active');
-      btnIndividual.classList.remove('text-[#6B5A50]');
-    }
-    if (btnCombo) {
-      btnCombo.classList.remove('active');
-      btnCombo.classList.add('text-[#6B5A50]');
-    }
-    if (fieldsIndividual) fieldsIndividual.classList.remove('hidden');
-    if (fieldsCombo) fieldsCombo.classList.add('hidden');
+  if (!Array.isArray(currentOrderItems) || currentOrderItems.length === 0) {
+    currentOrderItems = [createDefaultItem('individual', '1')];
   }
 
+  const format = OrdersHelper ? OrdersHelper.formatearMoneda : m => `$${m}`;
+  const totalItems = currentOrderItems.length;
+
+  container.innerHTML = currentOrderItems.map((it, idx) => {
+    const isCombo = it.type === 'combo';
+    const cant = Math.max(1, Number(it.quantity) || 1);
+    const precio = Math.max(0, Number(it.unitPrice) || 0);
+    const subtotal = Math.round(cant * precio);
+    it.subtotal = subtotal;
+
+    return `
+      <div class="order-item-card p-4 sm:p-5 rounded-2xl border ${isCombo ? 'border-amber-200 bg-amber-50/40' : 'border-[#E8E1D7] bg-[#FAF7F2]'} space-y-4 relative transition-all shadow-xs" data-item-id="${it.id}">
+        <!-- Encabezado del Ítem -->
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b ${isCombo ? 'border-amber-200' : 'border-[#EDE5DA]'} pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full ${isCombo ? 'bg-amber-200 text-amber-900' : 'bg-cookie-200 text-cookie-900'} text-xs font-extrabold flex items-center justify-center">
+              ${idx + 1}
+            </span>
+            <span class="font-bold text-sm text-cocoa-900">
+              ${isCombo ? 'Combo / Kit Especial' : 'Galletas Individuales'}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Selector de Tipo por Ítem -->
+            <div class="inline-flex p-0.5 rounded-xl bg-white border border-[#DCD3C7] text-xs font-semibold shadow-2xs">
+              <button type="button" data-action="set-item-type" data-id="${it.id}" data-type="individual"
+                class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${!isCombo ? 'bg-cookie-500 text-white font-bold shadow-xs' : 'text-[#6B5A50] hover:text-black'}">
+                <i data-lucide="cookie" class="w-3.5 h-3.5"></i>
+                <span>Individual</span>
+              </button>
+              <button type="button" data-action="set-item-type" data-id="${it.id}" data-type="combo"
+                class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${isCombo ? 'bg-amber-600 text-white font-bold shadow-xs' : 'text-[#6B5A50] hover:text-black'}">
+                <i data-lucide="gift" class="w-3.5 h-3.5"></i>
+                <span>Combo / Kit</span>
+              </button>
+            </div>
+
+            <!-- Botón Eliminar Ítem -->
+            ${totalItems > 1 ? `
+              <button type="button" data-action="delete-item" data-id="${it.id}"
+                class="p-2 rounded-xl text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors" title="Eliminar este ítem">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+
+        ${isCombo ? `
+          <!-- Campos para Combo -->
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold text-cocoa-900">
+                Nombre o temática del combo <span class="text-red-500">*</span>
+              </label>
+              <input type="text" data-field="comboName"
+                class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                placeholder="Ej: Kit Pintura Dulce Dinosaurios, Set Navideño..." value="${it.comboName || ''}">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-cocoa-900">
+                  Galletas incluidas por combo
+                </label>
+                <input type="number" min="1" data-field="cookiesCount"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                  value="${it.cookiesCount || 6}">
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-cocoa-900">
+                  Tipo de empaque
+                </label>
+                <select data-field="packaging"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
+                  <option value="Caja decorativa con lazo" ${it.packaging === 'Caja decorativa con lazo' ? 'selected' : ''}>Caja decorativa con lazo</option>
+                  <option value="Bolsa decorativa con cinta" ${it.packaging === 'Bolsa decorativa con cinta' ? 'selected' : ''}>Bolsa decorativa con cinta</option>
+                  <option value="Lata metálica de lujo" ${it.packaging === 'Lata metálica de lujo' ? 'selected' : ''}>Lata metálica de lujo</option>
+                  <option value="Caja con ventana transparente" ${it.packaging === 'Caja con ventana transparente' ? 'selected' : ''}>Caja con ventana transparente</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5 bg-white p-3 rounded-xl border border-amber-200">
+              <input type="checkbox" data-field="hasPaintKit" id="paint-kit-${it.id}"
+                class="w-4 h-4 rounded text-cookie-500 focus:ring-cookie-400 border-gray-300" ${it.hasPaintKit ? 'checked' : ''}>
+              <label for="paint-kit-${it.id}" class="text-xs font-semibold text-cocoa-900 cursor-pointer select-none">
+                🎨 ¿Incluye kit de pintura comestible? (acuarelas y pinceles)
+              </label>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-cocoa-900">Cantidad de combos</label>
+                <input type="number" min="1" data-field="quantity"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                  value="${it.quantity || 1}">
+              </div>
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-cocoa-900">Precio por combo ($)</label>
+                <input type="number" min="0" step="500" data-field="unitPrice"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                  value="${it.unitPrice || 14500}">
+              </div>
+            </div>
+          </div>
+        ` : `
+          <!-- Campos para Individual -->
+          <div class="space-y-3">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold text-cocoa-900">
+                Sabor o temática de la galleta <span class="text-red-500">*</span>
+              </label>
+              <input type="text" data-field="flavor"
+                class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                placeholder="Ej: Vainilla Real Glaseada, Chispas de Chocolate, Limón..." value="${it.flavor || ''}">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-cocoa-900">Cantidad (unidades)</label>
+                <input type="number" min="1" data-field="quantity"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                  value="${it.quantity || 12}">
+              </div>
+              <div class="space-y-1">
+                <label class="block text-xs font-bold text-cocoa-900">Precio unitario ($)</label>
+                <input type="number" min="0" step="100" data-field="unitPrice"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                  value="${it.unitPrice || 1200}">
+              </div>
+            </div>
+          </div>
+        `}
+
+        <!-- Pie de Ítem con Subtotal Renglón -->
+        <div class="flex items-center justify-between pt-2 border-t ${isCombo ? 'border-amber-200' : 'border-[#EDE5DA]'} text-xs">
+          <span class="text-[#7A6A60] font-medium">Subtotal de este ítem:</span>
+          <span class="font-bold text-sm text-cookie-700">${format(subtotal)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+}
+
+function syncItemsFromDom() {
+  if (typeof document === 'undefined') return;
+  const cards = document.querySelectorAll('.order-item-card');
+  cards.forEach(card => {
+    const id = card.getAttribute('data-item-id');
+    const item = currentOrderItems.find(it => it.id === id);
+    if (!item) return;
+
+    const flavorInput = card.querySelector('input[data-field="flavor"]');
+    if (flavorInput) item.flavor = flavorInput.value;
+
+    const comboNameInput = card.querySelector('input[data-field="comboName"]');
+    if (comboNameInput) item.comboName = comboNameInput.value;
+
+    const cookiesCountInput = card.querySelector('input[data-field="cookiesCount"]');
+    if (cookiesCountInput) item.cookiesCount = Number(cookiesCountInput.value) || 6;
+
+    const packagingSelect = card.querySelector('select[data-field="packaging"]');
+    if (packagingSelect) item.packaging = packagingSelect.value;
+
+    const paintKitCheck = card.querySelector('input[data-field="hasPaintKit"]');
+    if (paintKitCheck) item.hasPaintKit = paintKitCheck.checked;
+
+    const qtyInput = card.querySelector('input[data-field="quantity"]');
+    if (qtyInput) item.quantity = Math.max(1, Number(qtyInput.value) || 1);
+
+    const priceInput = card.querySelector('input[data-field="unitPrice"]');
+    if (priceInput) item.unitPrice = Math.max(0, Number(priceInput.value) || 0);
+
+    item.subtotal = Math.round(item.quantity * item.unitPrice);
+  });
+}
+
+function addItemToOrder() {
+  syncItemsFromDom();
+  const lastItem = currentOrderItems[currentOrderItems.length - 1];
+  const nextType = lastItem ? lastItem.type : 'individual';
+  const newItem = createDefaultItem(nextType, Date.now());
+
+  if (nextType === 'combo' && lastItem) {
+    newItem.comboName = lastItem.comboName || '';
+    newItem.packaging = lastItem.packaging || 'Caja decorativa con lazo';
+    newItem.hasPaintKit = lastItem.hasPaintKit !== undefined ? lastItem.hasPaintKit : true;
+    newItem.unitPrice = lastItem.unitPrice || 14500;
+  }
+  currentOrderItems.push(newItem);
+  renderOrderItems();
   updateLiveSummary();
+}
+
+function removeItemFromOrder(id) {
+  if (currentOrderItems.length <= 1) return;
+  syncItemsFromDom();
+  currentOrderItems = currentOrderItems.filter(it => it.id !== id);
+  renderOrderItems();
+  updateLiveSummary();
+}
+
+function setItemType(id, type) {
+  syncItemsFromDom();
+  const item = currentOrderItems.find(it => it.id === id);
+  if (item) {
+    item.type = type;
+    if (type === 'combo') {
+      item.comboName = item.comboName || 'Combo Especial';
+      item.cookiesCount = item.cookiesCount || 6;
+      item.packaging = item.packaging || 'Caja decorativa con lazo';
+      item.hasPaintKit = item.hasPaintKit !== undefined ? item.hasPaintKit : true;
+      item.unitPrice = item.unitPrice || 14500;
+      item.quantity = item.quantity || 1;
+    } else {
+      item.flavor = item.flavor || 'Vainilla Real';
+      item.unitPrice = item.unitPrice || 1200;
+      item.quantity = item.quantity || 12;
+    }
+  }
+  renderOrderItems();
+  updateLiveSummary();
+}
+
+function extractItemsFromForm() {
+  syncItemsFromDom();
+  return currentOrderItems.map(it => ({ ...it }));
+}
+
+function setOrderType(type) {
+  if (currentOrderItems.length > 0) {
+    setItemType(currentOrderItems[0].id, type);
+  }
 }
 
 function updateLiveSummary() {
   if (typeof document === 'undefined') return;
 
-  const isCombo = document.querySelector('input[name="orderType"][value="combo"]')?.checked;
-  let subtotal = 0;
-
-  if (isCombo) {
-    const qty = Number(document.getElementById('combo-quantity')?.value) || 1;
-    const price = Number(document.getElementById('combo-price')?.value) || 0;
-    subtotal = (OrdersHelper ? OrdersHelper.calcularSubtotal : (q, p) => q * p)(qty, price);
-  } else {
-    const qty = Number(document.getElementById('individual-quantity')?.value) || 1;
-    const price = Number(document.getElementById('individual-price')?.value) || 0;
-    subtotal = (OrdersHelper ? OrdersHelper.calcularSubtotal : (q, p) => q * p)(qty, price);
+  syncItemsFromDom();
+  let total = 0;
+  for (const it of currentOrderItems) {
+    total += Math.round((Number(it.quantity) || 0) * (Number(it.unitPrice) || 0));
   }
 
   const paymentStatus = document.getElementById('payment-status')?.value || 'Pendiente';
   const depositInput = document.getElementById('deposit-amount');
   const depositAmount = Number(depositInput?.value) || 0;
 
-  const calc = (OrdersHelper ? OrdersHelper.calcularSaldoPendiente : (t, a) => ({ total: t, abono: a, saldo: t - a }))(subtotal, depositAmount, paymentStatus);
+  const calc = (OrdersHelper ? OrdersHelper.calcularSaldoPendiente : (t, a) => ({ total: t, abono: a, saldo: t - a }))(total, depositAmount, paymentStatus);
 
   const format = OrdersHelper ? OrdersHelper.formatearMoneda : m => `$${m}`;
 
@@ -747,7 +1097,7 @@ function resetForm() {
   document.getElementById('order-id').value = '';
   document.getElementById('order-mode').value = 'create';
   document.getElementById('form-title').textContent = 'Registrar Nuevo Pedido';
-  document.getElementById('form-subtitle').textContent = 'Completa los datos de entrega y selecciona entre galletas individuales o combos.';
+  document.getElementById('form-subtitle').textContent = 'Completa los datos de entrega y agrega los artículos individuales o combos que el cliente requiere.';
   document.getElementById('badge-edit-mode').classList.add('hidden');
 
   const manana = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -760,7 +1110,8 @@ function resetForm() {
   const timeInput = document.getElementById('delivery-time');
   if (timeInput) timeInput.value = '15:00';
 
-  setOrderType('individual');
+  currentOrderItems = [createDefaultItem('individual', '1')];
+  renderOrderItems();
   toggleDepositContainer();
   updateLiveSummary();
 }
@@ -781,20 +1132,12 @@ function populateForm(order) {
   document.getElementById('delivery-date').value = order.dates?.deliveryDate || '';
   document.getElementById('delivery-time').value = order.dates?.deliveryTime || '';
 
-  if (order.orderType === 'combo') {
-    setOrderType('combo');
-    document.getElementById('combo-name').value = order.details?.comboName || '';
-    document.getElementById('combo-cookies-count').value = order.details?.cookiesCount || 6;
-    document.getElementById('combo-packaging').value = order.details?.packaging || 'Caja decorativa con lazo';
-    document.getElementById('combo-has-paint-kit').checked = Boolean(order.details?.hasPaintKit);
-    document.getElementById('combo-quantity').value = order.details?.quantity || 1;
-    document.getElementById('combo-price').value = order.details?.unitPrice || 14500;
-  } else {
-    setOrderType('individual');
-    document.getElementById('individual-flavor').value = order.details?.flavor || '';
-    document.getElementById('individual-quantity').value = order.details?.quantity || 12;
-    document.getElementById('individual-price').value = order.details?.unitPrice || 1200;
-  }
+  const ord = (OrdersHelper && typeof OrdersHelper.normalizeOrder === 'function') ? OrdersHelper.normalizeOrder(order) : order;
+  currentOrderItems = (ord.items && ord.items.length > 0)
+    ? ord.items.map(it => ({ ...it }))
+    : [createDefaultItem(order.orderType || 'individual', '1')];
+
+  renderOrderItems();
 
   document.getElementById('order-notes').value = order.notes || '';
   document.getElementById('order-status').value = order.status || 'Pendiente';
@@ -836,6 +1179,13 @@ const UIModule = {
   showToast,
   switchView,
   setOrderType,
+  createDefaultItem,
+  renderOrderItems,
+  addItemToOrder,
+  removeItemFromOrder,
+  setItemType,
+  syncItemsFromDom,
+  extractItemsFromForm,
   updateLiveSummary,
   resetForm,
   populateForm,

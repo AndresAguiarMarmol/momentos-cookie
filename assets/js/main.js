@@ -268,8 +268,54 @@ function setupFormHandlers(storage) {
   const form = document.getElementById('order-form');
   const btnInd = document.getElementById('btn-mode-individual');
   const btnCombo = document.getElementById('btn-mode-combo');
+  const btnAddItem = document.getElementById('btn-add-item');
+  const itemsContainer = document.getElementById('order-items-list');
   const paymentSelect = document.getElementById('payment-status');
+  const depositInput = document.getElementById('deposit-amount');
   const btnCancel = document.getElementById('btn-cancel-form');
+
+  if (btnAddItem) {
+    btnAddItem.addEventListener('click', () => {
+      if (window.UI && window.UI.addItemToOrder) {
+        window.UI.addItemToOrder();
+      }
+    });
+  }
+
+  if (itemsContainer) {
+    itemsContainer.addEventListener('click', (e) => {
+      const typeBtn = e.target.closest('[data-action="set-item-type"]');
+      if (typeBtn) {
+        const id = typeBtn.getAttribute('data-id');
+        const type = typeBtn.getAttribute('data-type');
+        if (window.UI && window.UI.setItemType) {
+          window.UI.setItemType(id, type);
+        }
+        return;
+      }
+
+      const delBtn = e.target.closest('[data-action="delete-item"]');
+      if (delBtn) {
+        const id = delBtn.getAttribute('data-id');
+        if (window.UI && window.UI.removeItemFromOrder) {
+          window.UI.removeItemFromOrder(id);
+        }
+        return;
+      }
+    });
+
+    itemsContainer.addEventListener('input', () => {
+      if (window.UI && window.UI.updateLiveSummary) {
+        window.UI.updateLiveSummary();
+      }
+    });
+
+    itemsContainer.addEventListener('change', () => {
+      if (window.UI && window.UI.updateLiveSummary) {
+        window.UI.updateLiveSummary();
+      }
+    });
+  }
 
   if (btnInd) {
     btnInd.addEventListener('click', () => {
@@ -292,22 +338,11 @@ function setupFormHandlers(storage) {
     });
   }
 
-  const inputsCalculo = [
-    'individual-quantity',
-    'individual-price',
-    'combo-quantity',
-    'combo-price',
-    'deposit-amount'
-  ];
-
-  inputsCalculo.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', () => {
-        if (window.UI) window.UI.updateLiveSummary();
-      });
-    }
-  });
+  if (depositInput) {
+    depositInput.addEventListener('input', () => {
+      if (window.UI) window.UI.updateLiveSummary();
+    });
+  }
 
   if (btnCancel) {
     btnCancel.addEventListener('click', () => {
@@ -332,7 +367,7 @@ function setupFormHandlers(storage) {
         return;
       }
 
-      const isCombo = document.querySelector('input[name="orderType"][value="combo"]')?.checked;
+      const items = (window.UI && window.UI.extractItemsFromForm) ? window.UI.extractItemsFromForm() : [];
       const inputs = {
         orderId: document.getElementById('order-id')?.value || '',
         createdAt: new Date().toISOString(),
@@ -341,16 +376,7 @@ function setupFormHandlers(storage) {
         customerEmail: document.getElementById('customer-email')?.value,
         deliveryDate,
         deliveryTime: document.getElementById('delivery-time')?.value,
-        orderType: isCombo ? 'combo' : 'individual',
-        individualFlavor: document.getElementById('individual-flavor')?.value,
-        individualQuantity: document.getElementById('individual-quantity')?.value,
-        individualPrice: document.getElementById('individual-price')?.value,
-        comboName: document.getElementById('combo-name')?.value,
-        comboCookiesCount: document.getElementById('combo-cookies-count')?.value,
-        comboPackaging: document.getElementById('combo-packaging')?.value,
-        comboHasPaintKit: document.getElementById('combo-has-paint-kit')?.checked,
-        comboQuantity: document.getElementById('combo-quantity')?.value,
-        comboPrice: document.getElementById('combo-price')?.value,
+        items,
         notes: document.getElementById('order-notes')?.value,
         orderStatus: document.getElementById('order-status')?.value,
         paymentStatus: document.getElementById('payment-status')?.value,

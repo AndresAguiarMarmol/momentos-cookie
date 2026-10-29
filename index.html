@@ -398,118 +398,27 @@
             </div>
           </div>
 
-          <!-- 3. Modalidad del Pedido (Selector Dinámico) -->
+          <!-- 3. Artículos del Pedido (Multi-ítem) -->
           <div class="space-y-4 border-t border-[#F0EAE1] pt-5">
-            <h3 class="text-xs font-bold text-cookie-700 uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="package" class="w-4 h-4"></i>
-              3. Modalidad del Pedido
-            </h3>
-
-            <!-- Segmented Control -->
-            <div class="flex p-1 rounded-xl bg-[#F0EAE1] border border-[#E4DDD3]">
-              <label class="segment-btn active py-2 cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm" id="btn-mode-individual">
-                <input type="radio" name="orderType" value="individual" class="sr-only" checked>
-                <i data-lucide="cookie" class="w-4 h-4"></i>
-                <span>Galletas Individuales</span>
-              </label>
-
-              <label class="segment-btn py-2 cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm text-[#6B5A50]" id="btn-mode-combo">
-                <input type="radio" name="orderType" value="combo" class="sr-only">
-                <i data-lucide="gift" class="w-4 h-4"></i>
-                <span>Combo / Kit Especial</span>
-              </label>
+            <input type="hidden" name="orderType" id="order-type" value="individual">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 class="text-xs font-bold text-cookie-700 uppercase tracking-wider flex items-center gap-2">
+                  <i data-lucide="package" class="w-4 h-4"></i>
+                  3. Artículos del Pedido
+                </h3>
+                <p class="text-[11px] text-[#7A6A60] mt-0.5">Puedes mezclar galletas individuales y combos especiales en el mismo pedido.</p>
+              </div>
+              <button type="button" id="btn-add-item"
+                class="px-3.5 py-2 rounded-xl bg-cookie-500 hover:bg-cookie-600 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 touch-target">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>＋ Agregar otro ítem</span>
+              </button>
             </div>
 
-            <!-- Campos: Modalidad Individual -->
-            <div id="fields-individual" class="space-y-4 bg-cookie-50/50 p-4 rounded-xl border border-cookie-100">
-              <div class="space-y-1">
-                <label for="individual-flavor" class="block text-xs font-bold text-cocoa-900">
-                  Sabor o tipo de galleta
-                </label>
-                <input type="text" id="individual-flavor"
-                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
-                  placeholder="Ej: Vainilla y Glaseado Royal, Chispas de Chocolate...">
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1">
-                  <label for="individual-quantity" class="block text-xs font-bold text-cocoa-900">
-                    Cantidad (unidades)
-                  </label>
-                  <input type="number" id="individual-quantity" min="1" value="12"
-                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
-                </div>
-
-                <div class="space-y-1">
-                  <label for="individual-price" class="block text-xs font-bold text-cocoa-900">
-                    Precio unitario ($)
-                  </label>
-                  <input type="number" id="individual-price" min="0" step="100" value="1200"
-                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
-                </div>
-              </div>
-            </div>
-
-            <!-- Campos: Modalidad Combo / Kit (Condicionales) -->
-            <div id="fields-combo" class="hidden space-y-4 bg-amber-50/60 p-4 rounded-xl border border-amber-200">
-              <div class="space-y-1">
-                <label for="combo-name" class="block text-xs font-bold text-cocoa-900">
-                  Nombre o temática del combo
-                </label>
-                <input type="text" id="combo-name"
-                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
-                  placeholder="Ej: Kit Pintura Dulce Dinosaurios, Set Navideño...">
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="space-y-1">
-                  <label for="combo-cookies-count" class="block text-xs font-bold text-cocoa-900">
-                    Galletas incluidas por combo
-                  </label>
-                  <input type="number" id="combo-cookies-count" min="1" value="6"
-                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
-                </div>
-
-                <div class="space-y-1">
-                  <label for="combo-packaging" class="block text-xs font-bold text-cocoa-900">
-                    Tipo de empaque / presentación
-                  </label>
-                  <select id="combo-packaging"
-                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
-                    <option value="Caja decorativa con lazo">Caja decorativa con lazo</option>
-                    <option value="Bolsa decorativa con cinta">Bolsa decorativa con cinta</option>
-                    <option value="Lata metálica de lujo">Lata metálica de lujo</option>
-                    <option value="Caja con ventana transparente">Caja con ventana transparente</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Casilla Kit de Pintura -->
-              <div class="flex items-center gap-3 bg-white p-3 rounded-lg border border-amber-200">
-                <input type="checkbox" id="combo-has-paint-kit" checked
-                  class="w-5 h-5 rounded text-cookie-500 focus:ring-cookie-400 border-gray-300">
-                <label for="combo-has-paint-kit" class="text-xs sm:text-sm font-semibold text-cocoa-900 cursor-pointer">
-                  🎨 ¿Incluye kit de pintura comestible? (pinturas y pinceles)
-                </label>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1">
-                  <label for="combo-quantity" class="block text-xs font-bold text-cocoa-900">
-                    Cantidad de combos
-                  </label>
-                  <input type="number" id="combo-quantity" min="1" value="1"
-                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
-                </div>
-
-                <div class="space-y-1">
-                  <label for="combo-price" class="block text-xs font-bold text-cocoa-900">
-                    Precio por combo ($)
-                  </label>
-                  <input type="number" id="combo-price" min="0" step="500" value="14500"
-                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
-                </div>
-              </div>
+            <!-- Contenedor dinámico de ítems -->
+            <div id="order-items-list" class="space-y-4">
+              <!-- Render dinámico de cada ítem -->
             </div>
           </div>
 

@@ -173,6 +173,116 @@ function formatearMoneda(monto, simbolo = '$') {
   return `${simbolo}${formateado}`;
 }
 
+/**
+ * Normaliza un pedido para garantizar que siempre exponga la propiedad `items: [...]`.
+ * Si el pedido tiene el esquema anterior monoproducto (`orderType` y `details`),
+ * lo convierte en un arreglo de 1 ítem sin modificar los datos de origen.
+ */
+function normalizeOrder(order) {
+  if (!order) return order;
+
+  if (Array.isArray(order.items) && order.items.length > 0) {
+    const items = order.items.map((it, idx) => ({
+      id: it.id || `item-${idx + 1}`,
+      type: it.type || (it.comboName ? 'combo' : 'individual'),
+      flavor: it.flavor || '',
+      comboName: it.comboName || '',
+      cookiesCount: Number(it.cookiesCount) || (it.type === 'combo' ? 6 : 1),
+      packaging: it.packaging || '',
+      hasPaintKit: Boolean(it.hasPaintKit),
+      quantity: Math.max(1, Number(it.quantity) || 1),
+      unitPrice: Math.max(0, Number(it.unitPrice) || 0),
+      subtotal: it.subtotal !== undefined ? Number(it.subtotal) : calcularSubtotal(it.quantity, it.unitPrice)
+    }));
+    return {
+      ...order,
+      items
+    };
+  }
+
+  // Esquema legado monoproducto
+  const type = order.orderType || 'individual';
+  const det = order.details || {};
+  const singleItem = {
+    id: 'item-1',
+    type: type,
+    flavor: det.flavor || '',
+    comboName: det.comboName || '',
+    cookiesCount: Number(det.cookiesCount) || (type === 'combo' ? 6 : 1),
+    packaging: det.packaging || '',
+    hasPaintKit: Boolean(det.hasPaintKit),
+    quantity: Math.max(1, Number(det.quantity) || 1),
+    unitPrice: Math.max(0, Number(det.unitPrice) || 0),
+    subtotal: det.subtotal !== undefined ? Number(det.subtotal) : calcularSubtotal(det.quantity, det.unitPrice)
+  };
+
+  return {
+    ...order,
+    items: [singleItem]
+  };
+}
+
+/**
+ * Calcula totales, subtotales, saldo y total de galletas de una colección de ítems.
+ */
+function calcularTotalesPedido(items = [], montoAbono = 0, estadoPago = 'Pendiente') {
+  let total = 0;
+  let totalGalletas = 0;
+
+  for (const it of items) {
+    const cant = Math.max(0, Number(it.quantity) || 0);
+    const precio = Math.max(0, Number(it.unitPrice) || 0);
+    const sub = it.subtotal !== undefined && !isNaN(Number(it.subtotal))
+      ? Number(it.subtotal)
+      : Math.round(cant * precio);
+    total += sub;
+
+    const galletasPorUnidad = it.type === 'combo'
+      ? Math.max(1, Number(it.cookiesCount) || 1)
+      : 1;
+    totalGalletas += cant * galletasPorUnidad;
+  }
+
+  const saldoInfo = calcularSaldoPendiente(total, montoAbono, estadoPago);
+
+  return {
+    total,
+    totalGalletas,
+    abono: saldoInfo.abono,
+    saldo: saldoInfo.saldo
+  };
+}
+
+/**
+ * Genera un texto resumen amigable y conciso de los ítems para tarjetas y listas.
+ */
+function formatearResumenItems(order) {
+  if (!order) return '';
+  const ord = normalizeOrder(order);
+  const items = ord.items || [];
+  if (items.length === 0) return 'Sin ítems';
+
+  let totalGalletas = 0;
+  const descripciones = items.map(it => {
+    const cant = Number(it.quantity) || 1;
+    const galletasPorUnidad = it.type === 'combo'
+      ? Math.max(1, Number(it.cookiesCount) || 1)
+      : 1;
+    totalGalletas += cant * galletasPorUnidad;
+
+    if (it.type === 'combo') {
+      const nombre = it.comboName || 'Combo Especial';
+      const extraPintura = it.hasPaintKit ? ' + Kit Pintura' : '';
+      return `${cant}x ${nombre}${extraPintura}`;
+    }
+    const sabor = it.flavor || 'Surtidas';
+    return `${cant}x ${sabor}`;
+  });
+
+  const textoItems = items.length === 1 ? '1 ítem' : `${items.length} ítems`;
+  return `${textoItems} (${totalGalletas} galletas): ${descripciones.join(', ')}`;
+}
+
 // Exportación dual: CommonJS para pruebas Node.js y objeto global para el navegador
 const OrdersModule = {
   calcularSubtotal,
@@ -184,7 +294,10 @@ const OrdersModule = {
   filtrarPedidos,
   generarIdPedido,
   construirEnlaceWhatsApp,
-  formatearMoneda
+  formatearMoneda,
+  normalizeOrder,
+  calcularTotalesPedido,
+  formatearResumenItems
 };
 
 if (typeof module !== 'undefined' && module.exports) {

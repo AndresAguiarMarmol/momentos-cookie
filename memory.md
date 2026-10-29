@@ -30,23 +30,49 @@ Registro de todo lo que debe preservarse entre sesiones de trabajo: arquitectura
     "deliveryDate": "2026-10-29",
     "deliveryTime": "15:30"
   },
-  "orderType": "combo", 
+  "orderType": "mixto", 
+  "items": [
+    {
+      "id": "item-1",
+      "type": "individual",
+      "flavor": "Vainilla Real Glaseada",
+      "comboName": "",
+      "cookiesCount": 1,
+      "packaging": "Bolsa celofán",
+      "hasPaintKit": false,
+      "quantity": 12,
+      "unitPrice": 1200,
+      "subtotal": 14400
+    },
+    {
+      "id": "item-2",
+      "type": "combo",
+      "flavor": "",
+      "comboName": "Kit Halloween Fiesta",
+      "cookiesCount": 6,
+      "packaging": "Caja decorativa con lazo",
+      "hasPaintKit": true,
+      "quantity": 2,
+      "unitPrice": 12000,
+      "subtotal": 24000
+    }
+  ],
   "details": {
-    "flavor": "", 
-    "comboName": "Kit Halloween Fiesta",
-    "cookiesCount": 6,
-    "packaging": "Caja decorativa con lazo",
-    "hasPaintKit": true,
-    "quantity": 2,
-    "unitPrice": 12000,
-    "subtotal": 24000
+    "flavor": "Vainilla Real Glaseada", 
+    "comboName": "",
+    "cookiesCount": 1,
+    "packaging": "Bolsa celofán",
+    "hasPaintKit": false,
+    "quantity": 12,
+    "unitPrice": 1200,
+    "subtotal": 14400
   },
   "notes": "Temática de calabazas y murciélagos. Sin frutos secos por alergia.",
   "status": "En producción",
   "payment": {
-    "total": 24000,
+    "total": 38400,
     "status": "Abono/Seña",
-    "depositAmount": 12000
+    "depositAmount": 20000
   }
 }
 ```
@@ -54,7 +80,8 @@ Registro de todo lo que debe preservarse entre sesiones de trabajo: arquitectura
 Valores permitidos para estados:
 - **`status`:** `"Pendiente"` | `"En producción"` | `"Listo para entrega"` | `"Entregado"` | `"Cancelado"`
 - **`payment.status`:** `"Pendiente"` | `"Abono/Seña"` | `"Pagado total"`
-- **`orderType`:** `"individual"` | `"combo"`
+- **`orderType`:** `"individual"` | `"combo"` | `"mixto"`
+- **Retrocompatibilidad:** Si un pedido almacenado no contiene `items`, la función `normalizeOrder(order)` lo encapsula automáticamente como un pedido de 1 ítem a partir de `details` y `orderType`.
 
 ---
 
@@ -73,10 +100,23 @@ Valores permitidos para estados:
   - *Esta semana:* Planificación a corto plazo.
   - *Próximas semanas:* En cola de producción.
 - **Formularios con cambio condicional dinámico:** Al alternar entre *Galletas Individuales* y *Combo / Kit*, se muestran/ocultan automáticamente los campos de tipo de empaque, selector de kit de pintura y cantidad de galletas incluidas.
+- **Gestión Multi-Ítem por Pedido (Spec 005):** Cada pedido permite registrar $N$ artículos heterogéneos (mezclando galletas individuales de distintos sabores y combos especiales con kits de pintura). Al pulsar "＋ Agregar otro ítem", el sistema copia por defecto el tipo del ítem precedente para acelerar la carga repetitiva.
 
 ---
 
 ## 3. Historial de cambios
+
+### 2026-10-29 — Implementación de Spec 005: Pedidos Multi-Ítem (Mezcla de Individuales y Combos)
+- **T1 a T6 completadas:** Implementado soporte completo para pedidos con múltiples artículos individuales y combos en una misma orden.
+  1. En [assets/js/orders.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/orders.js): creadas las funciones puras `normalizeOrder`, `calcularTotalesPedido` y `formatearResumenItems`, asegurando 100% de compatibilidad con pedidos legados y cálculo reactivo de gran total y galletas a hornear.
+  2. En [assets/js/production.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/production.js): consolidación de horneado en cocina que recorre todos los ítems de todos los pedidos activos, agrupando adecuadamente por sabor, combos, empaques y kits de pintura.
+  3. En [assets/js/receipt.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/receipt.js): comprobante térmico/remito de taller desglosa cada ítem con su subtotal y gran total a pagar.
+  4. En [index.html](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/index.html) y [assets/js/ui.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/ui.js): formulario dinámico con contenedor `#order-items-list`, botón `[＋ Agregar otro ítem]` con duplicación de tipo del ítem anterior, selector individual/combo por ítem, eliminación controlada y tarjetas de planificación con resumen de ítems.
+  5. En [assets/js/main.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/main.js): cableado de eventos de ítems, guardado y edición reactiva.
+- Suite de pruebas unitarias ampliada a **45/45 pruebas pasando al 100% en verde con `node --test`** (suite `tests/multi_item.test.js`).
+- Verificación interactiva exitosa en Chrome mediante DevTools MCP (creación de pedido multi-ítem, tarjetas en vista de planificación, modal de detalle y ticket térmico).
+- Especificación [specs/005-pedidos-multi-item/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/005-pedidos-multi-item/spec.md) marcada como `implementada`.
+
 
 ### 2026-10-29 — Reescritura integral de la skill SDD (.agents/skills/sdd/SKILL.md)
 - **Diagnóstico y objetivo:** La skill previa carecía del frontmatter YAML estandarizado, omitía la arquitectura de subagentes y la relación con los comandos slash (`/sdd-*`), y no proveía las plantillas exhaustivas ni la guía formal de sintaxis EARS con ejemplos y antipatrones.
