@@ -78,6 +78,18 @@ Valores permitidos para estados:
 
 ## 3. Historial de cambios
 
+### 2026-10-29 — Reescritura integral de la skill SDD (.agents/skills/sdd/SKILL.md)
+- **Diagnóstico y objetivo:** La skill previa carecía del frontmatter YAML estandarizado, omitía la arquitectura de subagentes y la relación con los comandos slash (`/sdd-*`), y no proveía las plantillas exhaustivas ni la guía formal de sintaxis EARS con ejemplos y antipatrones.
+- **Acción ejecutada:**
+  1. Incorporado el encabezado YAML con `name: sdd` y descripción canónica.
+  2. Documentados los principios innegociables ("La spec manda", separación QUÉ vs CÓMO, compuertas de fase con aprobación del usuario, TDD Red-Green estricto con parada obligatoria).
+  3. Detallado el ciclo completo de 8 fases (Constitución → Spec → Clarificación → Plan → Tareas → Implementación → Validación → Gestión de Cambios).
+  4. Redactada la tabla de sintaxis EARS formal (Evento, Estado No Deseado, Basado en Estado, Comportamiento Continuo y Opcional) con ejemplos prácticos y antipatrones prohibidos.
+  5. Documentada la arquitectura multi-agente (`coordinator`, `planner`, `implementer`, `reviewer`, `auditor`) y la tabla de comandos slash del flujo SDD.
+  6. Provistas las plantillas oficiales para `spec.md`, `plan.md`, `tasks.md` y el protocolo de actualización de `memory.md`.
+- Verificada la integridad de la suite completa: 37/37 tests unitarios pasando en verde con `node --test`.
+
+
 ### 2026-10-29 — Recuperación forense de 17 pedidos reales desde el registro de Chrome
 - **Diagnóstico:** Los pedidos reales ingresados por el usuario en la sesión previa (Sandra Vergara, Isabel Aranda, Constanza Blest, Alejandra Olea, etc.) no se habían respaldado en archivo externo antes de implementar el modal.
 - **Acción ejecutada:**
