@@ -101,10 +101,23 @@ Valores permitidos para estados:
   - *Próximas semanas:* En cola de producción.
 - **Formularios con cambio condicional dinámico:** Al alternar entre *Galletas Individuales* y *Combo / Kit*, se muestran/ocultan automáticamente los campos de tipo de empaque, selector de kit de pintura y cantidad de galletas incluidas.
 - **Gestión Multi-Ítem por Pedido (Spec 005):** Cada pedido permite registrar $N$ artículos heterogéneos (mezclando galletas individuales de distintos sabores y combos especiales con kits de pintura). Al pulsar "＋ Agregar otro ítem", el sistema copia por defecto el tipo del ítem precedente para acelerar la carga repetitiva.
+- **Consolidación Automática por Cliente y Fecha (Spec 006):** Múltiples órdenes destinadas al mismo cliente en la misma fecha de entrega se fusionan en una sola orden multi-ítem unificada mediante `consolidarPedidosPorClienteYFecha`. Normaliza nombres de clientes tolerando tildes, barras y variantes tipográficas, fusiona ítems, suma totales financieros y abonos, manteniendo cero pérdida de información y recalculando el estado de pago.
 
 ---
 
 ## 3. Historial de cambios
+
+### 2026-10-29 — Implementación de Spec 006: Consolidación de Pedidos por Cliente y Fecha de Entrega
+- **T1 a T3 completadas:** Consolidación de pedidos existentes por cliente y fecha comprometida de entrega en una sola orden con múltiples ítems.
+  1. En [assets/js/orders.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/orders.js): implementadas las funciones puras `normalizarClaveCliente(nombre)` y `consolidarPedidosPorClienteYFecha(pedidos)` en `OrdersModule`.
+  2. En [assets/js/storage.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/storage.js): método `consolidateCurrentOrders()` y actualización de `RECOVERED_ORDERS` con los 11 pedidos consolidados.
+  3. Archivos de respaldo sincronizados: `recuperado_pedidos.json`, `momentos-cookie-backup-recuperado.json` y `C:\Users\Andres\Downloads\momentos-cookie-recuperado.json`.
+  4. En [assets/js/main.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/main.js) e [index.html](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/index.html): consolidación automática en inicialización y actualización de textos en botones de recuperación.
+  5. En [assets/js/ui.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/ui.js): corrección de referencia `ord` en `openDetailModal`.
+- Verificación de consistencia: 17 pedidos originales consolidados en exactamente 11 pedidos únicos (200 galletas totales a hornear, \$208.680 total y \$68.380 abonados, con balance financiero 100% idéntico).
+- Suite de pruebas unitarias ampliada a **49/49 pruebas pasando en verde con `node --test`** (incluyendo suite `tests/consolidate_orders.test.js`).
+- Verificación interactiva exitosa en Chrome mediante DevTools MCP.
+- Especificación [specs/006-consolidacion-pedidos/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/006-consolidacion-pedidos/spec.md) marcada como `implementada`.
 
 ### 2026-10-29 — Implementación de Spec 005: Pedidos Multi-Ítem (Mezcla de Individuales y Combos)
 - **T1 a T6 completadas:** Implementado soporte completo para pedidos con múltiples artículos individuales y combos en una misma orden.

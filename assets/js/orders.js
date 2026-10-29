@@ -283,6 +283,158 @@ function formatearResumenItems(order) {
   return `${textoItems} (${totalGalletas} galletas): ${descripciones.join(', ')}`;
 }
 
+/**
+ * Normaliza nombres de clientes para agrupación insensible a mayúsculas, acentos o separadores.
+ */
+function normalizarClaveCliente(nombre) {
+  if (!nombre) return '';
+  let n = nombre.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Alias o variantes tipográficas conocidas
+  if (n === 'alejanda olea') n = 'alejandra olea';
+  if (n === 'andres trabajo' || n === 'andres  trabajo') n = 'andres trabajo';
+
+  return n;
+}
+
+/**
+ * Consolida una colección de pedidos agrupándolos por cliente y fecha de entrega.
+ * Si un cliente tiene múltiples órdenes para la misma fecha, las fusiona en un
+ * único pedido multi-ítem sumando todos los artículos, montos y abonos.
+ */
+function consolidarPedidosPorClienteYFecha(pedidos = []) {
+  if (!Array.isArray(pedidos) || pedidos.length === 0) return [];
+
+  const grupos = new Map();
+
+  for (const rawPedido of pedidos) {
+    const p = normalizeOrder(rawPedido);
+    const clienteKey = normalizarClaveCliente(p.customer?.name);
+    const fechaKey = (p.dates?.deliveryDate || 'sin-fecha').trim();
+    const key = `${clienteKey}_${fechaKey}`;
+
+    if (!grupos.has(key)) {
+      grupos.set(key, []);
+    }
+    grupos.get(key).push(p);
+  }
+
+  const resultado = [];
+
+  for (const [, lista] of grupos.entries()) {
+    if (lista.length === 1) {
+      resultado.push(lista[0]);
+      continue;
+    }
+
+    // Fusionar múltiples pedidos en uno solo
+    const base = lista[0];
+    const todosItems = [];
+    let abonoTotal = 0;
+    const notasSet = new Set();
+
+    const statusPriority = {
+      'En producción': 5,
+      'Listo para entrega': 4,
+      'Pendiente': 3,
+      'Entregado': 2,
+      'Cancelado': 1
+    };
+    let mejorStatus = base.status || 'Pendiente';
+
+    for (const ord of lista) {
+      if ((statusPriority[ord.status] || 0) > (statusPriority[mejorStatus] || 0)) {
+        mejorStatus = ord.status;
+      }
+
+      abonoTotal += Number(ord.payment?.depositAmount) || 0;
+
+      if (ord.notes && ord.notes.trim()) {
+        notasSet.add(ord.notes.trim());
+      }
+
+      const itemsOrden = ord.items || [];
+      for (const it of itemsOrden) {
+        todosItems.push({
+          ...it,
+          id: `item-${todosItems.length + 1}`
+        });
+      }
+    }
+
+    let granTotal = 0;
+    let tieneInd = false;
+    let tieneCombo = false;
+
+    for (const it of todosItems) {
+      const cant = Math.max(1, Number(it.quantity) || 1);
+      const precio = Math.max(0, Number(it.unitPrice) || 0);
+      const sub = it.subtotal !== undefined ? Number(it.subtotal) : Math.round(cant * precio);
+      it.subtotal = sub;
+      granTotal += sub;
+
+      if (it.type === 'combo') tieneCombo = true;
+      else tieneInd = true;
+    }
+
+    const orderType = (tieneInd && tieneCombo) ? 'mixto' : (tieneCombo ? 'combo' : 'individual');
+
+    let paymentStatus = 'Pendiente';
+    if (abonoTotal >= granTotal && granTotal > 0) {
+      paymentStatus = 'Pagado total';
+      abonoTotal = granTotal;
+    } else if (abonoTotal > 0) {
+      paymentStatus = 'Abono/Seña';
+    }
+
+    const mejorNombre = lista.map(o => o.customer?.name).sort((a, b) => b.length - a.length)[0] || base.customer?.name;
+    const mejorTelefono = lista.map(o => o.customer?.phone).find(tel => tel && tel.trim().length >= 8) || base.customer?.phone;
+    const mejorEmail = lista.map(o => o.customer?.email).find(em => em && em.trim()) || base.customer?.email || '';
+
+    const primer = todosItems[0] || {};
+    const details = {
+      flavor: primer.flavor || '',
+      comboName: primer.comboName || '',
+      cookiesCount: primer.cookiesCount || 1,
+      packaging: primer.packaging || '',
+      hasPaintKit: primer.hasPaintKit || false,
+      quantity: primer.quantity || 1,
+      unitPrice: primer.unitPrice || 0,
+      subtotal: primer.subtotal || 0
+    };
+
+    resultado.push({
+      id: base.id,
+      customer: {
+        name: mejorNombre,
+        phone: mejorTelefono,
+        email: mejorEmail
+      },
+      dates: {
+        createdAt: base.dates?.createdAt || new Date().toISOString(),
+        deliveryDate: base.dates?.deliveryDate || '',
+        deliveryTime: base.dates?.deliveryTime || '15:00'
+      },
+      orderType,
+      items: todosItems,
+      details,
+      notes: Array.from(notasSet).join(' | '),
+      status: mejorStatus,
+      payment: {
+        total: granTotal,
+        status: paymentStatus,
+        depositAmount: abonoTotal
+      }
+    });
+  }
+
+  return resultado;
+}
+
 // Exportación dual: CommonJS para pruebas Node.js y objeto global para el navegador
 const OrdersModule = {
   calcularSubtotal,
@@ -297,7 +449,8 @@ const OrdersModule = {
   formatearMoneda,
   normalizeOrder,
   calcularTotalesPedido,
-  formatearResumenItems
+  formatearResumenItems,
+  consolidarPedidosPorClienteYFecha
 };
 
 if (typeof module !== 'undefined' && module.exports) {

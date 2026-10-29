@@ -45,11 +45,13 @@ function initApp() {
   // 9. Controladores de Respaldo y Recuperación en Menú Principal (Spec 004)
   setupHeaderBackupHandlers(storage);
 
-  // Auto-recuperación: si solo existen los 4 pedidos demostrativos base, restaurar automáticamente los 17 pedidos reales
+  // Auto-recuperación: si solo existen los 4 pedidos demostrativos base, restaurar automáticamente los pedidos reales consolidados
   const currentOrders = storage.getOrders();
   const isOnlyDemo = currentOrders.length === 4 && currentOrders.every(o => o.id && o.id.startsWith('MC-20261028-00'));
   if (isOnlyDemo && storage.restorePreviousData) {
     storage.restorePreviousData();
+  } else if (storage.consolidateCurrentOrders) {
+    storage.consolidateCurrentOrders();
   }
 
   // 10. Aplicar configuración de marca inicial y estado inicial del formulario
@@ -160,12 +162,12 @@ function setupResetSeedHandler(storage) {
 
   if (btnRestorePrev) {
     btnRestorePrev.addEventListener('click', () => {
-      if (confirm('¿Restaurar los 17 pedidos grabados anteriormente (Sandra Vergara, Isabel Aranda, Constanza Blest, etc.)?')) {
+      if (confirm('¿Restaurar los pedidos reales consolidados (Sandra Vergara, Isabel Aranda, Constanza Blest, etc.)?')) {
         if (storage.restorePreviousData) {
           storage.restorePreviousData();
         }
         if (window.UI) {
-          window.UI.showToast('¡17 pedidos recuperados exitosamente!', 'success');
+          window.UI.showToast('¡Pedidos recuperados y consolidados exitosamente!', 'success');
         }
         refreshAllViews(storage);
       }
