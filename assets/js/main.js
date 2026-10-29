@@ -45,6 +45,13 @@ function initApp() {
   // 9. Controladores de Respaldo y Recuperación en Menú Principal (Spec 004)
   setupHeaderBackupHandlers(storage);
 
+  // Auto-recuperación: si solo existen los 4 pedidos demostrativos base, restaurar automáticamente los 17 pedidos reales
+  const currentOrders = storage.getOrders();
+  const isOnlyDemo = currentOrders.length === 4 && currentOrders.every(o => o.id && o.id.startsWith('MC-20261028-00'));
+  if (isOnlyDemo && storage.restorePreviousData) {
+    storage.restorePreviousData();
+  }
+
   // 10. Aplicar configuración de marca inicial y estado inicial del formulario
   if (window.UI) {
     if (window.UI.updateBusinessBranding) {
@@ -137,12 +144,28 @@ function setupSearchAndFilterHandlers(storage) {
 
 function setupResetSeedHandler(storage) {
   const btnReset = document.getElementById('btn-reset-seed');
+  const btnRestorePrev = document.getElementById('btn-restore-previous');
+
   if (btnReset) {
     btnReset.addEventListener('click', () => {
       if (confirm('¿Restaurar los pedidos de demostración iniciales? Se reemplazarán los pedidos actuales por el set inicial de pruebas.')) {
         storage.resetToSeedData();
         if (window.UI) {
           window.UI.showToast('Datos de demostración restaurados.', 'info');
+        }
+        refreshAllViews(storage);
+      }
+    });
+  }
+
+  if (btnRestorePrev) {
+    btnRestorePrev.addEventListener('click', () => {
+      if (confirm('¿Restaurar los 17 pedidos grabados anteriormente (Sandra Vergara, Isabel Aranda, Constanza Blest, etc.)?')) {
+        if (storage.restorePreviousData) {
+          storage.restorePreviousData();
+        }
+        if (window.UI) {
+          window.UI.showToast('¡17 pedidos recuperados exitosamente!', 'success');
         }
         refreshAllViews(storage);
       }
@@ -616,6 +639,20 @@ function setupHeaderBackupHandlers(storage) {
       };
 
       reader.readAsText(file);
+    });
+  }
+
+  const btnRestoreBuiltin = document.getElementById('btn-restore-builtin');
+  if (btnRestoreBuiltin) {
+    btnRestoreBuiltin.addEventListener('click', () => {
+      if (storage.restorePreviousData) {
+        storage.restorePreviousData();
+      }
+      if (window.UI) {
+        window.UI.showToast('¡17 pedidos recuperados con éxito!', 'success');
+      }
+      if (modalRestore) modalRestore.close();
+      refreshAllViews(storage);
     });
   }
 

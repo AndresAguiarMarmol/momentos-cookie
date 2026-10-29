@@ -134,3 +134,4 @@ test('T1.5: importBackupJson restaura también los settings del taller si vienen
   assert.equal(settings.phone, '+56 9 9999 8888');
   assert.equal(settings.currencySymbol, '€');
 });
+

@@ -57,3 +57,4 @@ FUNCIÓN alConfirmarRecuperacion():
 - Test 3: Importación en modo fusión (`merge`): conserva pedidos preexistentes y suma nuevos.
 - Test 4: Importación en modo reemplazo (`replace`): sobrescribe completamente la base de datos local.
 - Test 5: Importación de configuraciones asociadas al backup.
+

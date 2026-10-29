@@ -1,7 +1,7 @@
-/**
+﻿/**
  * assets/js/storage.js
  * Capa de persistencia local resiliente para Momentos Cookie.
- * Encapsula localStorage con tolerancia a errores, fallback en memoria y datos iniciales de demostración.
+ * Encapsula localStorage con tolerancia a errores, fallback en memoria y datos iniciales de demostraciÃ³n.
  */
 
 const STORAGE_KEYS = {
@@ -28,7 +28,7 @@ const INITIAL_SEED_ORDERS = [
   {
     id: 'MC-20261028-001',
     customer: {
-      name: 'Sofía Martínez',
+      name: 'SofÃ­a MartÃ­nez',
       phone: '+56 9 8765 4321',
       email: 'sofia.martinez@ejemplo.cl'
     },
@@ -43,18 +43,18 @@ const INITIAL_SEED_ORDERS = [
       unitPrice: 1200,
       subtotal: 28800
     },
-    notes: 'Diseño de flores en tonos pastel para baby shower. Sin nueces.',
+    notes: 'DiseÃ±o de flores en tonos pastel para baby shower. Sin nueces.',
     status: 'Pendiente',
     payment: {
       total: 28800,
-      status: 'Abono/Seña',
+      status: 'Abono/SeÃ±a',
       depositAmount: 15000
     }
   },
   {
     id: 'MC-20261028-002',
     customer: {
-      name: 'Martín Valenzuela',
+      name: 'MartÃ­n Valenzuela',
       phone: '+56 9 9123 9988',
       email: 'm.valenzuela@gmail.com'
     },
@@ -72,8 +72,8 @@ const INITIAL_SEED_ORDERS = [
       unitPrice: 14500,
       subtotal: 43500
     },
-    notes: 'Incluye 3 kits de pintura comestible con pinceles. Temática Dinosaurios.',
-    status: 'En producción',
+    notes: 'Incluye 3 kits de pintura comestible con pinceles. TemÃ¡tica Dinosaurios.',
+    status: 'En producciÃ³n',
     payment: {
       total: 43500,
       status: 'Pagado total',
@@ -95,7 +95,7 @@ const INITIAL_SEED_ORDERS = [
     details: {
       comboName: 'Set Corporativo Elegance',
       cookiesCount: 12,
-      packaging: 'Lata metálica de lujo',
+      packaging: 'Lata metÃ¡lica de lujo',
       hasPaintKit: false,
       quantity: 2,
       unitPrice: 18000,
@@ -105,7 +105,7 @@ const INITIAL_SEED_ORDERS = [
     status: 'Listo para entrega',
     payment: {
       total: 36000,
-      status: 'Abono/Seña',
+      status: 'Abono/SeÃ±a',
       depositAmount: 20000
     }
   },
@@ -118,7 +118,7 @@ const INITIAL_SEED_ORDERS = [
     },
     dates: {
       createdAt: new Date().toISOString(),
-      ...obtenerFechaRelativa(12, '16:00') // Próximas semanas
+      ...obtenerFechaRelativa(12, '16:00') // PrÃ³ximas semanas
     },
     orderType: 'individual',
     details: {
@@ -127,7 +127,7 @@ const INITIAL_SEED_ORDERS = [
       unitPrice: 1500,
       subtotal: 45000
     },
-    notes: 'Cumpleaños temático Halloween.',
+    notes: 'CumpleaÃ±os temÃ¡tico Halloween.',
     status: 'Pendiente',
     payment: {
       total: 45000,
@@ -137,8 +137,540 @@ const INITIAL_SEED_ORDERS = [
   }
 ];
 
+const RECOVERED_ORDERS = [
+    {
+        "id":  "MC-20261029-827",
+        "customer":  {
+                         "name":  "Sandra Vergara",
+                         "phone":  "+56998170998",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:23:43.827Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "Box Caldero Magico",
+                        "cookiesCount":  12,
+                        "packaging":  "Caja decorativa con lazo",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  10990,
+                        "subtotal":  10990
+                    },
+        "notes":  "N/A",
+        "status":  "En producción",
+        "payment":  {
+                        "total":  10990,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-060",
+        "customer":  {
+                         "name":  "isabel Aranda",
+                         "phone":  "98298388",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:31:33.059Z",
+                      "deliveryDate":  "2026-10-29",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "KIT CREA TU MONSTRUO",
+                        "cookiesCount":  4,
+                        "packaging":  "Caja con ventana transparente",
+                        "hasPaintKit":  true,
+                        "quantity":  2,
+                        "unitPrice":  8990,
+                        "subtotal":  17980
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  17980,
+                        "status":  "Pagado total",
+                        "depositAmount":  17980
+                    }
+    },
+    {
+        "id":  "MC-20261029-108",
+        "customer":  {
+                         "name":  "CONSTANZA BLEST GANA",
+                         "phone":  "982325250",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:36:32.108Z",
+                      "deliveryDate":  "2026-10-29",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "CAJA TRUCO O TRATO",
+                        "cookiesCount":  25,
+                        "packaging":  "Caja con ventana transparente",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  18990,
+                        "subtotal":  18990
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  18990,
+                        "status":  "Pagado total",
+                        "depositAmount":  18990
+                    }
+    },
+    {
+        "id":  "MC-20261029-758",
+        "customer":  {
+                         "name":  "ALEJANDRA OLEA",
+                         "phone":  "963462509",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:38:53.758Z",
+                      "deliveryDate":  "2026-10-29",
+                      "deliveryTime":  "19:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "KIT CREA TU MONSTRUO",
+                        "cookiesCount":  4,
+                        "packaging":  "Caja con ventana transparente",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  8990,
+                        "subtotal":  8990
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  8990,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-274",
+        "customer":  {
+                         "name":  "ALEJANDRA OLEA",
+                         "phone":  "963462509",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:40:36.274Z",
+                      "deliveryDate":  "2026-10-29",
+                      "deliveryTime":  "19:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOX CALDERO MAGICO",
+                        "cookiesCount":  12,
+                        "packaging":  "Caja decorativa con lazo",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  10990,
+                        "subtotal":  10990
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  10990,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-439",
+        "customer":  {
+                         "name":  "ALEJANDA OLEA",
+                         "phone":  "963462509",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:42:22.439Z",
+                      "deliveryDate":  "2026-10-29",
+                      "deliveryTime":  "19:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOLSAS BOO",
+                        "cookiesCount":  4,
+                        "packaging":  "Bolsa decorativa con cinta",
+                        "hasPaintKit":  true,
+                        "quantity":  4,
+                        "unitPrice":  3490,
+                        "subtotal":  13960
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  13960,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-543",
+        "customer":  {
+                         "name":  "ENDRINA/ANDRES",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:45:12.543Z",
+                      "deliveryDate":  "2026-10-29",
+                      "deliveryTime":  "09:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOLSAS BOO",
+                        "cookiesCount":  4,
+                        "packaging":  "Bolsa decorativa con cinta",
+                        "hasPaintKit":  true,
+                        "quantity":  2,
+                        "unitPrice":  3490,
+                        "subtotal":  6980
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  6980,
+                        "status":  "Pagado total",
+                        "depositAmount":  6980
+                    }
+    },
+    {
+        "id":  "MC-20261029-261",
+        "customer":  {
+                         "name":  "CONI VECINA",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:46:40.261Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOX CALDERO MAGICO",
+                        "cookiesCount":  12,
+                        "packaging":  "Caja decorativa con lazo",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  10990,
+                        "subtotal":  10990
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  10990,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-935",
+        "customer":  {
+                         "name":  "ANDREINA EX VECINA",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:48:02.935Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "12:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "KIT CREA TU MONSTRUO",
+                        "cookiesCount":  4,
+                        "packaging":  "Caja con ventana transparente",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  8990,
+                        "subtotal":  8990
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  8990,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-775",
+        "customer":  {
+                         "name":  "FIAMA",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:48:47.775Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "KIT CREA TU MONSTRUO",
+                        "cookiesCount":  4,
+                        "packaging":  "Caja con ventana transparente",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  8990,
+                        "subtotal":  8990
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  8990,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-813",
+        "customer":  {
+                         "name":  "ANDRES TRABAJO",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:49:41.813Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOX CALDERO  MAGICO",
+                        "cookiesCount":  12,
+                        "packaging":  "Caja decorativa con lazo",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  10990,
+                        "subtotal":  10990
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  10990,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-843",
+        "customer":  {
+                         "name":  "ANDRES TRABAJO",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:50:32.843Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOLSAS BOO",
+                        "cookiesCount":  4,
+                        "packaging":  "Bolsa decorativa con cinta",
+                        "hasPaintKit":  true,
+                        "quantity":  4,
+                        "unitPrice":  3490,
+                        "subtotal":  13960
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  13960,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-001",
+        "customer":  {
+                         "name":  "NATALIA CORTEZ VECINA",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:52:24.001Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOLSAS BOO",
+                        "cookiesCount":  4,
+                        "packaging":  "Bolsa decorativa con cinta",
+                        "hasPaintKit":  true,
+                        "quantity":  7,
+                        "unitPrice":  3490,
+                        "subtotal":  24430
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  24430,
+                        "status":  "Pagado total",
+                        "depositAmount":  24430
+                    }
+    },
+    {
+        "id":  "MC-20261029-156",
+        "customer":  {
+                         "name":  "CECILIA TIRONI",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:53:40.156Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "KIT CREA TU MONSTRUO",
+                        "cookiesCount":  4,
+                        "packaging":  "Caja con ventana transparente",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  8990,
+                        "subtotal":  8990
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  8990,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-176",
+        "customer":  {
+                         "name":  "CECILIA TIRONI",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:54:26.176Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOLSAS BOO",
+                        "cookiesCount":  4,
+                        "packaging":  "Bolsa decorativa con cinta",
+                        "hasPaintKit":  true,
+                        "quantity":  4,
+                        "unitPrice":  3490,
+                        "subtotal":  13960
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  13960,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-144",
+        "customer":  {
+                         "name":  "ANDRES/ TRABAJO",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T11:55:10.144Z",
+                      "deliveryDate":  "2026-10-30",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "individual",
+        "details":  {
+                        "flavor":  "HALLOWEEN",
+                        "comboName":  "",
+                        "cookiesCount":  15,
+                        "packaging":  "Bolsa decorativa",
+                        "hasPaintKit":  false,
+                        "quantity":  15,
+                        "unitPrice":  1000,
+                        "subtotal":  15000
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  15000,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    },
+    {
+        "id":  "MC-20261029-294",
+        "customer":  {
+                         "name":  "CONSTANZA BLEST GANA",
+                         "phone":  "966694484",
+                         "email":  ""
+                     },
+        "dates":  {
+                      "createdAt":  "2026-10-29T12:10:33.294Z",
+                      "deliveryDate":  "2026-10-29",
+                      "deliveryTime":  "15:00"
+                  },
+        "orderType":  "combo",
+        "details":  {
+                        "flavor":  "",
+                        "comboName":  "BOLSAS BOO",
+                        "cookiesCount":  4,
+                        "packaging":  "Bolsa decorativa con cinta",
+                        "hasPaintKit":  true,
+                        "quantity":  1,
+                        "unitPrice":  3490,
+                        "subtotal":  3490
+                    },
+        "notes":  "",
+        "status":  "Pendiente",
+        "payment":  {
+                        "total":  3490,
+                        "status":  "Pendiente",
+                        "depositAmount":  0
+                    }
+    }
+]
+;
+
+
 function createStorageService(options = {}) {
-  // Almacén en memoria por si storage nativo no está disponible o falla
+  // AlmacÃ©n en memoria por si storage nativo no estÃ¡ disponible o falla
   let memoryFallback = {};
 
   const storage = options.storage || (function () {
@@ -151,7 +683,7 @@ function createStorageService(options = {}) {
         return window.localStorage;
       }
     } catch {
-      // Ignorar fallo de storage bloqueado (ej: modo incógnito estricto)
+      // Ignorar fallo de storage bloqueado (ej: modo incÃ³gnito estricto)
     }
     return {
       getItem(key) {
@@ -193,7 +725,7 @@ function createStorageService(options = {}) {
   function getOrders() {
     let orders = safeGet(STORAGE_KEYS.ORDERS, null);
     if (!Array.isArray(orders) || orders.length === 0) {
-      // Precarga con seed data demostrativa si está vacío
+      // Precarga con seed data demostrativa si estÃ¡ vacÃ­o
       orders = JSON.parse(JSON.stringify(INITIAL_SEED_ORDERS));
       safeSet(STORAGE_KEYS.ORDERS, orders);
     }
@@ -207,7 +739,7 @@ function createStorageService(options = {}) {
 
   function saveOrder(order) {
     if (!order || !order.id) {
-      throw new Error('El pedido debe tener un ID válido.');
+      throw new Error('El pedido debe tener un ID vÃ¡lido.');
     }
     const orders = getOrders();
     const index = orders.findIndex(o => o.id === order.id);
@@ -245,6 +777,11 @@ function createStorageService(options = {}) {
 
   function resetToSeedData() {
     safeSet(STORAGE_KEYS.ORDERS, JSON.parse(JSON.stringify(INITIAL_SEED_ORDERS)));
+    return getOrders();
+  }
+
+  function restorePreviousData() {
+    safeSet(STORAGE_KEYS.ORDERS, JSON.parse(JSON.stringify(RECOVERED_ORDERS)));
     return getOrders();
   }
 
@@ -299,7 +836,7 @@ function createStorageService(options = {}) {
         try {
           parsed = JSON.parse(rawJson);
         } catch (err) {
-          return { success: false, error: 'JSON corrupto o inválido: ' + err.message };
+          return { success: false, error: 'JSON corrupto o invÃ¡lido: ' + err.message };
         }
       }
       items = Array.isArray(parsed) ? parsed : (parsed && parsed.orders);
@@ -342,6 +879,7 @@ function createStorageService(options = {}) {
     updateOrderStatus,
     deleteOrder,
     resetToSeedData,
+    restorePreviousData,
     getSettings,
     saveSettings,
     exportBackupJson,
@@ -353,6 +891,7 @@ function createStorageService(options = {}) {
 const StorageModule = {
   STORAGE_KEYS,
   INITIAL_SEED_ORDERS,
+  RECOVERED_ORDERS,
   createStorageService
 };
 
@@ -364,4 +903,5 @@ if (typeof window !== 'undefined') {
   window.StorageService = createStorageService();
   window.StorageModule = StorageModule;
 }
+
 

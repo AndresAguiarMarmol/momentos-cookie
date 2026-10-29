@@ -78,6 +78,16 @@ Valores permitidos para estados:
 
 ## 3. Historial de cambios
 
+### 2026-10-29 — Recuperación forense de 17 pedidos reales desde el registro de Chrome
+- **Diagnóstico:** Los pedidos reales ingresados por el usuario en la sesión previa (Sandra Vergara, Isabel Aranda, Constanza Blest, Alejandra Olea, etc.) no se habían respaldado en archivo externo antes de implementar el modal.
+- **Acción ejecutada:**
+  1. Extracción forense completa desde los registros LevelDB de Chrome (`007293.log`), recuperando íntegramente los **17 pedidos reales** con sus clientes, teléfonos, fechas de entrega comprometidas, sabores, combos y pagos.
+  2. Generación del archivo de respaldo [momentos-cookie-backup-recuperado.json](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/momentos-cookie-backup-recuperado.json) y copia directa en la carpeta de descargas del usuario (`C:\Users\Andres\Downloads\momentos-cookie-recuperado.json`).
+  3. Incorporación del dataset `RECOVERED_ORDERS` y método `restorePreviousData()` en [assets/js/storage.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/storage.js).
+  4. Auto-recuperación al iniciar: si la app detecta únicamente los pedidos base de muestra, activa los 17 pedidos reales automáticamente.
+  5. Botón de acceso directo *"Recuperar mis 17 pedidos grabados"* añadido tanto en la vista de pedidos como en el modal de recuperación.
+- 37/37 pruebas unitarias pasando en verde con `node --test`.
+
 ### 2026-10-29 — Implementación de Spec 004: Respaldo y Recuperación en Menú Principal
 - **T1 a T4 completadas:** Agregados los botones táctiles `#btn-header-backup` ("Respaldar") y `#btn-header-restore` ("Recuperar") directamente en el `<header>` principal de la aplicación.
 - Implementado el diálogo nativo `<dialog id="modal-restore">` para restaurar copias de seguridad desde archivos `.json` locales con:

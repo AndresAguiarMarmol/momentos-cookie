@@ -280,11 +280,17 @@
       </div>
 
       <!-- Resumen de Resultados -->
-      <div class="flex items-center justify-between text-xs text-[#7A6A60] px-1">
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-[#7A6A60] px-1">
         <span id="orders-count-badge">Mostrando todos los pedidos</span>
-        <button id="btn-reset-seed" class="text-cookie-600 hover:text-cookie-800 underline font-medium" title="Restaurar datos de muestra para pruebas">
-          Restaurar datos de demostración
-        </button>
+        <div class="flex items-center gap-3">
+          <button id="btn-restore-previous" class="text-amber-800 hover:text-amber-950 font-bold underline flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200" title="Restaurar los 17 pedidos grabados anteriormente">
+            <i data-lucide="history" class="w-3.5 h-3.5 text-amber-700"></i>
+            <span>Recuperar mis 17 pedidos grabados</span>
+          </button>
+          <button id="btn-reset-seed" class="text-cookie-600 hover:text-cookie-800 underline font-medium" title="Restaurar datos de muestra para pruebas">
+            Datos de demostración
+          </button>
+        </div>
       </div>
 
       <!-- Grid de Pedidos -->
@@ -904,6 +910,12 @@
         </button>
         <span class="block text-[11px] text-[#8C7B72] mt-1" id="restore-file-name">Ningún archivo seleccionado</span>
       </div>
+
+      <!-- Opción rápida de restauración de pedidos anteriores -->
+      <button type="button" id="btn-restore-builtin" class="w-full py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold transition-all flex items-center justify-center gap-2">
+        <i data-lucide="history" class="w-4 h-4 text-amber-700"></i>
+        <span>Restaurar directamente los 17 pedidos grabados</span>
+      </button>
 
       <!-- Resumen previo del archivo cargado (oculto hasta validar) -->
       <div id="restore-preview-container" class="hidden space-y-3 bg-cookie-50/70 border border-cookie-200 p-3.5 rounded-xl text-xs">
