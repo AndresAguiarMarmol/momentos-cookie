@@ -1,0 +1,18 @@
+{
+  "name": "Momentos Cookie - Control de Pedidos",
+  "short_name": "MomentosCookie",
+  "description": "Sistema de gestión y planificación de pedidos de galletas artesanales y personalizadas.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#D97724",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%23D97724'/><circle cx='35' cy='35' r='6' fill='%232D241E'/><circle cx='65' cy='38' r='5' fill='%232D241E'/><circle cx='48' cy='65' r='6' fill='%232D241E'/><circle cx='30' cy='58' r='4' fill='%232D241E'/><circle cx='70' cy='62' r='5' fill='%232D241E'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

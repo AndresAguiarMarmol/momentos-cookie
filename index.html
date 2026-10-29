@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Momentos Cookie | Gestión y Control de Pedidos</title>
+  <meta name="description"
+    content="Aplicación de control y planificación de entregas de galletas artesanales y combos personalizados para Momentos Cookie.">
+  <meta name="theme-color" content="#D97724">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Tailwind CSS vía CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            cookie: {
+              50: '#FDF8F3',
+              100: '#FBF0E6',
+              200: '#F6DEC9',
+              300: '#EFC4A1',
+              400: '#E4A370',
+              500: '#D97724', // Color canela/galleta principal
+              600: '#C25E1A',
+              700: '#9B4515',
+              800: '#7B3615',
+              900: '#642E15',
+            },
+            cocoa: {
+              800: '#3D312A',
+              900: '#2D241E',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons vía CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Estilos Custom de Taller -->
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+
+<body class="min-h-full flex flex-col bg-[#FAF7F2] text-[#2D241E]">
+
+  <!-- =======================================================================
+       Header Principal & Identidad de Marca
+       ======================================================================= -->
+  <header class="bg-white border-b border-[#E8E1D7] sticky top-0 z-30 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+      
+      <!-- Logo y Título -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cookie-600 to-cookie-400 flex items-center justify-center text-white shadow-sm">
+          <i data-lucide="cookie" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-cocoa-900 leading-tight">
+            Momentos Cookie
+          </h1>
+          <p class="text-xs text-[#7A6A60] font-medium hidden sm:block">
+            Control de Pedidos & Planificación de Taller
+          </p>
+        </div>
+      </div>
+
+      <!-- Resumen de Pedidos Activos y Botón de Ajustes -->
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-cookie-50 text-cookie-700 border border-cookie-200">
+          <span class="w-2 h-2 rounded-full bg-cookie-500 animate-pulse"></span>
+          <span id="active-orders-counter">0 pedidos activos</span>
+        </span>
+
+        <button id="btn-open-settings" class="p-2 rounded-xl text-[#7A6A60] hover:text-cookie-600 hover:bg-[#F2ECE4] transition-colors" title="Configuración del taller">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Navegación por Pestañas (Mobile First) -->
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#F2ECE4] flex gap-2 overflow-x-auto py-2 no-scrollbar" aria-label="Secciones de la aplicación">
+      <button id="tab-planning" data-view="view-planning" class="nav-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-cookie-500 text-white shadow-xs">
+        <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+        <span>Planificación de Entregas</span>
+      </button>
+
+      <button id="tab-orders" data-view="view-orders" class="nav-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4]">
+        <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+        <span>Todos los Pedidos</span>
+      </button>
+
+      <button id="tab-production" data-view="view-production" class="nav-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4]">
+        <i data-lucide="chef-hat" class="w-4 h-4"></i>
+        <span>Producción & Métricas</span>
+      </button>
+
+      <button id="tab-form" data-view="view-form" class="nav-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4]">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span>Nuevo Pedido</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- =======================================================================
+       Contenedor Principal de Vistas SPA
+       ======================================================================= -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- =====================================================================
+         VISTA 1: Planificación de Entregas (Semáforo Cronológico)
+         ===================================================================== -->
+    <section id="view-planning" class="view-panel active space-y-6">
+      
+      <!-- Encabezado y Filtro Rápido -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-2xl border border-[#E8E1D7] shadow-xs">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-cocoa-900 flex items-center gap-2">
+            <i data-lucide="calendar" class="w-5 h-5 text-cookie-500"></i>
+            Entregas Organizadas por Urgencia
+          </h2>
+          <p class="text-xs text-[#7A6A60]">
+            Pedidos ordenados por fecha comprometida. Atiende primero los destacados en rojo y naranja.
+          </p>
+        </div>
+
+        <!-- Filtro Rápido de Estado en Planificación -->
+        <div class="flex items-center gap-2">
+          <label for="planning-status-filter" class="text-xs font-semibold text-[#7A6A60]">Filtrar:</label>
+          <select id="planning-status-filter" class="text-xs font-medium bg-[#FAF7F2] border border-[#DCD3C7] rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-cookie-500 outline-none">
+            <option value="activos" selected>Solo Activos (Pendiente / En producción / Listo)</option>
+            <option value="todos">Todos los estados</option>
+            <option value="Pendiente">Pendientes</option>
+            <option value="En producción">En producción</option>
+            <option value="Listo para entrega">Listos para entrega</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BLOQUE 1: Atrasados / Urgentes (Rojo) -->
+      <div id="group-atrasados" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+            <h3 class="font-bold text-sm sm:text-base text-red-800 flex items-center gap-1.5">
+              Atrasados / Requieren Atención Inmediata
+            </h3>
+          </div>
+          <span id="count-atrasados" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+            0
+          </span>
+        </div>
+        <div id="container-atrasados" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Tarjetas renderizadas dinámicamente -->
+        </div>
+      </div>
+
+      <!-- BLOQUE 2: Entregas de Hoy o Próximas 24 Horas (Ámbar/Naranja) -->
+      <div id="group-hoy" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+            <h3 class="font-bold text-sm sm:text-base text-orange-900 flex items-center gap-1.5">
+              Entregas de Hoy (o próximas 24 horas)
+            </h3>
+          </div>
+          <span id="count-hoy" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-900 border border-orange-200">
+            0
+          </span>
+        </div>
+        <div id="container-hoy" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Tarjetas renderizadas dinámicamente -->
+        </div>
+      </div>
+
+      <!-- BLOQUE 3: Esta Semana (Azul/Celeste) -->
+      <div id="group-esta-semana" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+            <h3 class="font-bold text-sm sm:text-base text-blue-900 flex items-center gap-1.5">
+              Esta Semana (Próximos 7 días)
+            </h3>
+          </div>
+          <span id="count-esta-semana" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-900 border border-blue-200">
+            0
+          </span>
+        </div>
+        <div id="container-esta-semana" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Tarjetas renderizadas dinámicamente -->
+        </div>
+      </div>
+
+      <!-- BLOQUE 4: Próximas Semanas (Gris/Verde) -->
+      <div id="group-proximas" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-600"></span>
+            <h3 class="font-bold text-sm sm:text-base text-emerald-900 flex items-center gap-1.5">
+              Próximas Semanas
+            </h3>
+          </div>
+          <span id="count-proximas" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border border-emerald-200">
+            0
+          </span>
+        </div>
+        <div id="container-proximas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Tarjetas renderizadas dinámicamente -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         VISTA 2: Listado General y Búsqueda Reactiva
+         ===================================================================== -->
+    <section id="view-orders" class="view-panel space-y-5">
+      
+      <!-- Barra de Búsqueda y Filtros de Estado -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#E8E1D7] shadow-xs space-y-4">
+        
+        <!-- Input de Búsqueda -->
+        <div class="relative">
+          <i data-lucide="search" class="w-5 h-5 text-[#8C7B72] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <input type="text" id="search-input"
+            class="w-full pl-11 pr-10 py-3 rounded-xl border border-[#DCD3C7] bg-[#FAF7F2] text-sm focus:bg-white focus:border-cookie-500 focus:ring-2 focus:ring-cookie-200 outline-none transition-all"
+            placeholder="Buscar por cliente, teléfono o código (ej. María, 912345678, MC-20261028-001)...">
+          <button id="search-clear-btn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1" title="Limpiar búsqueda">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Chips de Filtro por Estado -->
+        <div class="flex flex-wrap items-center gap-2 text-xs font-medium" id="orders-status-filters">
+          <span class="text-[#7A6A60] font-semibold mr-1">Estado:</span>
+          <button data-status="todos" class="filter-chip px-3 py-1.5 rounded-lg bg-cookie-500 text-white font-semibold transition-colors">
+            Todos
+          </button>
+          <button data-status="Pendiente" class="filter-chip px-3 py-1.5 rounded-lg bg-[#F0EAE1] text-[#5A4A42] hover:bg-[#E5DDD2] transition-colors">
+            Pendiente
+          </button>
+          <button data-status="En producción" class="filter-chip px-3 py-1.5 rounded-lg bg-[#F0EAE1] text-[#5A4A42] hover:bg-[#E5DDD2] transition-colors">
+            En producción
+          </button>
+          <button data-status="Listo para entrega" class="filter-chip px-3 py-1.5 rounded-lg bg-[#F0EAE1] text-[#5A4A42] hover:bg-[#E5DDD2] transition-colors">
+            Listo para entrega
+          </button>
+          <button data-status="Entregado" class="filter-chip px-3 py-1.5 rounded-lg bg-[#F0EAE1] text-[#5A4A42] hover:bg-[#E5DDD2] transition-colors">
+            Entregado
+          </button>
+          <button data-status="Cancelado" class="filter-chip px-3 py-1.5 rounded-lg bg-[#F0EAE1] text-[#5A4A42] hover:bg-[#E5DDD2] transition-colors">
+            Cancelado
+          </button>
+        </div>
+      </div>
+
+      <!-- Resumen de Resultados -->
+      <div class="flex items-center justify-between text-xs text-[#7A6A60] px-1">
+        <span id="orders-count-badge">Mostrando todos los pedidos</span>
+        <button id="btn-reset-seed" class="text-cookie-600 hover:text-cookie-800 underline font-medium" title="Restaurar datos de muestra para pruebas">
+          Restaurar datos de demostración
+        </button>
+      </div>
+
+      <!-- Grid de Pedidos -->
+      <div id="all-orders-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Render dinámico -->
+      </div>
+
+      <!-- Estado Vacío -->
+      <div id="orders-empty-state" class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-[#DCD3C7] p-8 space-y-3">
+        <div class="w-12 h-12 mx-auto rounded-full bg-cookie-100 flex items-center justify-center text-cookie-600">
+          <i data-lucide="cookie" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-bold text-cocoa-900">No se encontraron pedidos</h3>
+        <p class="text-xs text-[#7A6A60] max-w-sm mx-auto">
+          No hay órdenes que coincidan con el término de búsqueda o el filtro aplicado.
+        </p>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         VISTA 3: Formulario de Registro / Edición de Pedido
+         ===================================================================== -->
+    <section id="view-form" class="view-panel">
+      <div class="max-w-2xl mx-auto bg-white p-5 sm:p-8 rounded-2xl border border-[#E8E1D7] shadow-xs space-y-6">
+        
+        <!-- Título del Formulario -->
+        <div class="border-b border-[#F0EAE1] pb-4 flex items-center justify-between">
+          <div>
+            <h2 id="form-title" class="text-lg sm:text-xl font-bold text-cocoa-900">
+              Registrar Nuevo Pedido
+            </h2>
+            <p id="form-subtitle" class="text-xs text-[#7A6A60]">
+              Completa los datos de entrega y selecciona entre galletas individuales o combos.
+            </p>
+          </div>
+          <span id="badge-edit-mode" class="hidden px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+            Modo Edición
+          </span>
+        </div>
+
+        <form id="order-form" class="space-y-6" novalidate>
+          <input type="hidden" id="order-id" value="">
+          <input type="hidden" id="order-mode" value="create">
+
+          <!-- 1. Datos de Contacto -->
+          <div class="space-y-4">
+            <h3 class="text-xs font-bold text-cookie-700 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="user" class="w-4 h-4"></i>
+              1. Datos de Contacto del Cliente
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label for="customer-name" class="block text-xs font-bold text-cocoa-900">
+                  Nombre completo <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="customer-name" required
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 focus:ring-2 focus:ring-cookie-200 outline-none"
+                  placeholder="Ej: Carolina Morales">
+              </div>
+
+              <div class="space-y-1">
+                <label for="customer-phone" class="block text-xs font-bold text-cocoa-900">
+                  Teléfono / WhatsApp <span class="text-red-500">*</span>
+                </label>
+                <input type="tel" id="customer-phone" required
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 focus:ring-2 focus:ring-cookie-200 outline-none"
+                  placeholder="Ej: +56 9 1234 5678">
+              </div>
+
+              <div class="sm:col-span-2 space-y-1">
+                <label for="customer-email" class="block text-xs font-bold text-cocoa-900">
+                  Correo electrónico (opcional)
+                </label>
+                <input type="email" id="customer-email"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 focus:ring-2 focus:ring-cookie-200 outline-none"
+                  placeholder="cliente@ejemplo.com">
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Fechas Clave -->
+          <div class="space-y-4 border-t border-[#F0EAE1] pt-5">
+            <h3 class="text-xs font-bold text-cookie-700 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="calendar" class="w-4 h-4"></i>
+              2. Fechas de Entrega
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label for="delivery-date" class="block text-xs font-bold text-cocoa-900">
+                  Fecha comprometida de entrega <span class="text-red-500">*</span>
+                </label>
+                <input type="date" id="delivery-date" required
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 focus:ring-2 focus:ring-cookie-200 outline-none">
+              </div>
+
+              <div class="space-y-1">
+                <label for="delivery-time" class="block text-xs font-bold text-cocoa-900">
+                  Hora de entrega (opcional)
+                </label>
+                <input type="time" id="delivery-time"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 focus:ring-2 focus:ring-cookie-200 outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Modalidad del Pedido (Selector Dinámico) -->
+          <div class="space-y-4 border-t border-[#F0EAE1] pt-5">
+            <h3 class="text-xs font-bold text-cookie-700 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="package" class="w-4 h-4"></i>
+              3. Modalidad del Pedido
+            </h3>
+
+            <!-- Segmented Control -->
+            <div class="flex p-1 rounded-xl bg-[#F0EAE1] border border-[#E4DDD3]">
+              <label class="segment-btn active py-2 cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm" id="btn-mode-individual">
+                <input type="radio" name="orderType" value="individual" class="sr-only" checked>
+                <i data-lucide="cookie" class="w-4 h-4"></i>
+                <span>Galletas Individuales</span>
+              </label>
+
+              <label class="segment-btn py-2 cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm text-[#6B5A50]" id="btn-mode-combo">
+                <input type="radio" name="orderType" value="combo" class="sr-only">
+                <i data-lucide="gift" class="w-4 h-4"></i>
+                <span>Combo / Kit Especial</span>
+              </label>
+            </div>
+
+            <!-- Campos: Modalidad Individual -->
+            <div id="fields-individual" class="space-y-4 bg-cookie-50/50 p-4 rounded-xl border border-cookie-100">
+              <div class="space-y-1">
+                <label for="individual-flavor" class="block text-xs font-bold text-cocoa-900">
+                  Sabor o tipo de galleta
+                </label>
+                <input type="text" id="individual-flavor"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                  placeholder="Ej: Vainilla y Glaseado Royal, Chispas de Chocolate...">
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label for="individual-quantity" class="block text-xs font-bold text-cocoa-900">
+                    Cantidad (unidades)
+                  </label>
+                  <input type="number" id="individual-quantity" min="1" value="12"
+                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
+                </div>
+
+                <div class="space-y-1">
+                  <label for="individual-price" class="block text-xs font-bold text-cocoa-900">
+                    Precio unitario ($)
+                  </label>
+                  <input type="number" id="individual-price" min="0" step="100" value="1200"
+                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
+                </div>
+              </div>
+            </div>
+
+            <!-- Campos: Modalidad Combo / Kit (Condicionales) -->
+            <div id="fields-combo" class="hidden space-y-4 bg-amber-50/60 p-4 rounded-xl border border-amber-200">
+              <div class="space-y-1">
+                <label for="combo-name" class="block text-xs font-bold text-cocoa-900">
+                  Nombre o temática del combo
+                </label>
+                <input type="text" id="combo-name"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none"
+                  placeholder="Ej: Kit Pintura Dulce Dinosaurios, Set Navideño...">
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label for="combo-cookies-count" class="block text-xs font-bold text-cocoa-900">
+                    Galletas incluidas por combo
+                  </label>
+                  <input type="number" id="combo-cookies-count" min="1" value="6"
+                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
+                </div>
+
+                <div class="space-y-1">
+                  <label for="combo-packaging" class="block text-xs font-bold text-cocoa-900">
+                    Tipo de empaque / presentación
+                  </label>
+                  <select id="combo-packaging"
+                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
+                    <option value="Caja decorativa con lazo">Caja decorativa con lazo</option>
+                    <option value="Bolsa decorativa con cinta">Bolsa decorativa con cinta</option>
+                    <option value="Lata metálica de lujo">Lata metálica de lujo</option>
+                    <option value="Caja con ventana transparente">Caja con ventana transparente</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Casilla Kit de Pintura -->
+              <div class="flex items-center gap-3 bg-white p-3 rounded-lg border border-amber-200">
+                <input type="checkbox" id="combo-has-paint-kit" checked
+                  class="w-5 h-5 rounded text-cookie-500 focus:ring-cookie-400 border-gray-300">
+                <label for="combo-has-paint-kit" class="text-xs sm:text-sm font-semibold text-cocoa-900 cursor-pointer">
+                  🎨 ¿Incluye kit de pintura comestible? (pinturas y pinceles)
+                </label>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label for="combo-quantity" class="block text-xs font-bold text-cocoa-900">
+                    Cantidad de combos
+                  </label>
+                  <input type="number" id="combo-quantity" min="1" value="1"
+                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
+                </div>
+
+                <div class="space-y-1">
+                  <label for="combo-price" class="block text-xs font-bold text-cocoa-900">
+                    Precio por combo ($)
+                  </label>
+                  <input type="number" id="combo-price" min="0" step="500" value="14500"
+                    class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Notas y Especificaciones -->
+          <div class="space-y-2 border-t border-[#F0EAE1] pt-5">
+            <label for="order-notes" class="block text-xs font-bold text-cocoa-900">
+              Notas de diseño, temática y advertencia de alergias
+            </label>
+            <textarea id="order-notes" rows="2"
+              class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 focus:ring-2 focus:ring-cookie-200 outline-none"
+              placeholder="Dedicatoria, colores preferidos, 'sin frutos secos', etc..."></textarea>
+          </div>
+
+          <!-- 5. Estado y Control de Pago -->
+          <div class="space-y-4 border-t border-[#F0EAE1] pt-5">
+            <h3 class="text-xs font-bold text-cookie-700 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
+              4. Estado del Pedido y Pago
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label for="order-status" class="block text-xs font-bold text-cocoa-900">
+                  Estado del pedido
+                </label>
+                <select id="order-status"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-[#DCD3C7] bg-[#FAF7F2] text-sm font-semibold focus:border-cookie-500 outline-none">
+                  <option value="Pendiente" selected>🟡 Pendiente</option>
+                  <option value="En producción">🟠 En producción</option>
+                  <option value="Listo para entrega">🟢 Listo para entrega</option>
+                  <option value="Entregado">✔️ Entregado</option>
+                  <option value="Cancelado">❌ Cancelado</option>
+                </select>
+              </div>
+
+              <div class="space-y-1">
+                <label for="payment-status" class="block text-xs font-bold text-cocoa-900">
+                  Estado de pago
+                </label>
+                <select id="payment-status"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-[#DCD3C7] bg-[#FAF7F2] text-sm font-semibold focus:border-cookie-500 outline-none">
+                  <option value="Pendiente" selected>Pendiente de cobro</option>
+                  <option value="Abono/Seña">Abono / Seña parcial</option>
+                  <option value="Pagado total">Pagado 100%</option>
+                </select>
+              </div>
+
+              <!-- Campo Condicional de Abono -->
+              <div id="deposit-amount-container" class="hidden sm:col-span-2 space-y-1 bg-cookie-50 p-3 rounded-xl border border-cookie-200">
+                <label for="deposit-amount" class="block text-xs font-bold text-cocoa-900">
+                  Monto abonado / seña ($)
+                </label>
+                <input type="number" id="deposit-amount" min="0" step="500" value="0"
+                  class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] bg-white text-sm focus:border-cookie-500 outline-none">
+              </div>
+            </div>
+
+            <!-- Resumen Financiero en Vivo -->
+            <div id="live-summary-card" class="bg-[#FAF7F2] p-4 rounded-xl border border-[#E4DDD3] grid grid-cols-3 text-center gap-2">
+              <div>
+                <span class="block text-[11px] font-semibold text-[#7A6A60]">TOTAL</span>
+                <span id="summary-total" class="text-base sm:text-lg font-bold text-cocoa-900">$0</span>
+              </div>
+              <div>
+                <span class="block text-[11px] font-semibold text-[#7A6A60]">ABONADO</span>
+                <span id="summary-deposit" class="text-base sm:text-lg font-bold text-emerald-700">$0</span>
+              </div>
+              <div>
+                <span class="block text-[11px] font-semibold text-[#7A6A60]">POR COBRAR</span>
+                <span id="summary-balance" class="text-base sm:text-lg font-bold text-cookie-700">$0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#F0EAE1]">
+            <button type="button" id="btn-cancel-form"
+              class="px-5 py-2.5 rounded-xl border border-[#DCD3C7] text-sm font-semibold text-[#6B5A50] hover:bg-[#F2ECE4] transition-colors">
+              Cancelar
+            </button>
+            <button type="submit" id="btn-save-order"
+              class="px-6 py-2.5 rounded-xl bg-cookie-500 hover:bg-cookie-600 text-white text-sm font-bold shadow-xs hover:shadow-md transition-all flex items-center gap-2">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>Guardar Pedido</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         VISTA 4: Planilla de Producción & Métricas Financieras
+         ===================================================================== -->
+    <section id="view-production" class="view-panel space-y-6">
+      
+      <!-- Encabezado de Producción y Filtros -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-[#E8E1D7] shadow-xs">
+        <div>
+          <h2 class="text-base sm:text-lg font-bold text-cocoa-900 flex items-center gap-2">
+            <i data-lucide="chef-hat" class="w-5 h-5 text-cookie-500"></i>
+            Planilla de Horneado & Balance de Taller
+          </h2>
+          <p class="text-xs text-[#7A6A60]">
+            Consolidado de unidades a producir para la cocina y métricas financieras de cobros.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label for="production-range-filter" class="text-xs font-semibold text-[#7A6A60]">Período:</label>
+          <select id="production-range-filter" class="text-xs font-semibold bg-[#FAF7F2] border border-[#DCD3C7] rounded-lg px-3 py-2 focus:ring-2 focus:ring-cookie-500 outline-none">
+            <option value="activos" selected>Todos los Activos</option>
+            <option value="hoy">Entregas de Hoy</option>
+            <option value="semana">Esta Semana (7 días)</option>
+          </select>
+          <button id="btn-print-production" class="p-2 rounded-lg bg-cookie-50 text-cookie-700 hover:bg-cookie-100 border border-cookie-200" title="Imprimir lista de horneado">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Balance Financiero -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-[#E8E1D7] shadow-xs">
+          <span class="text-xs font-bold text-[#7A6A60] block">TOTAL FACTURADO</span>
+          <span id="metric-facturado" class="text-lg sm:text-xl font-bold text-cocoa-900 block mt-1">$0</span>
+          <span class="text-[10px] text-gray-500 font-medium">Pedidos vigentes</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-emerald-100 bg-emerald-50/30 shadow-xs">
+          <span class="text-xs font-bold text-emerald-800 block">TOTAL COBRADO</span>
+          <span id="metric-cobrado" class="text-lg sm:text-xl font-bold text-emerald-700 block mt-1">$0</span>
+          <span class="text-[10px] text-emerald-600 font-medium">Señas y 100% pagados</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-cookie-200 bg-cookie-50/40 shadow-xs">
+          <span class="text-xs font-bold text-cookie-800 block">POR COBRAR</span>
+          <span id="metric-saldo" class="text-lg sm:text-xl font-bold text-cookie-700 block mt-1">$0</span>
+          <span class="text-[10px] text-cookie-600 font-medium">Saldo contra entrega</span>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-amber-200 bg-amber-50/30 shadow-xs">
+          <span class="text-xs font-bold text-amber-900 block">GALLETAS A HORNEAR</span>
+          <span id="metric-galletas" class="text-lg sm:text-xl font-bold text-amber-800 block mt-1">0 u.</span>
+          <span id="metric-ordenes-count" class="text-[10px] text-amber-700 font-medium">En 0 pedidos</span>
+        </div>
+      </div>
+
+      <!-- Planilla de Horneado de Cocina -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Columna 1: Lotes de Galletas por Sabor -->
+        <div class="bg-white p-5 rounded-2xl border border-[#E8E1D7] shadow-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-[#F0EAE1] pb-2.5">
+            <h3 class="font-bold text-sm sm:text-base text-cocoa-900 flex items-center gap-2">
+              <i data-lucide="cookie" class="w-4 h-4 text-cookie-600"></i>
+              Lotes de Galletas por Sabor
+            </h3>
+            <span class="text-[11px] text-[#7A6A60]">Toca para tachar</span>
+          </div>
+
+          <div id="production-baking-list" class="space-y-2">
+            <!-- Inyectado dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Columna 2: Combos Especiales, Kits de Pintura y Empaques -->
+        <div class="space-y-6">
+          <div class="bg-white p-5 rounded-2xl border border-[#E8E1D7] shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-[#F0EAE1] pb-2.5">
+              <h3 class="font-bold text-sm sm:text-base text-cocoa-900 flex items-center gap-2">
+                <i data-lucide="gift" class="w-4 h-4 text-amber-600"></i>
+                Combos Especiales a Armar
+              </h3>
+            </div>
+
+            <div id="production-combos-list" class="space-y-2">
+              <!-- Inyectado dinámicamente -->
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-[#E8E1D7] shadow-xs space-y-3">
+            <div class="flex items-center justify-between border-b border-[#F0EAE1] pb-2.5">
+              <h3 class="font-bold text-sm sm:text-base text-cocoa-900 flex items-center gap-2">
+                <i data-lucide="package" class="w-4 h-4 text-blue-600"></i>
+                Empaques & Kits Requeridos
+              </h3>
+            </div>
+
+            <div id="production-packaging-list" class="space-y-2">
+              <!-- Inyectado dinámicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Respaldo y Portabilidad de Datos -->
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-[#E8E1D7] shadow-xs space-y-4">
+        <div>
+          <h3 class="font-bold text-base text-cocoa-900 flex items-center gap-2">
+            <i data-lucide="database" class="w-5 h-5 text-cookie-500"></i>
+            Copia de Seguridad y Portabilidad de Datos
+          </h3>
+          <p class="text-xs text-[#7A6A60] mt-0.5">
+            Descarga tus pedidos para respaldar tu información o abrirlos en Microsoft Excel / Google Sheets.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button id="btn-export-json" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cookie-500 hover:bg-cookie-600 text-white text-xs font-bold transition-all shadow-xs">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Descargar Copia de Seguridad (.json)</span>
+          </button>
+
+          <button id="btn-export-csv" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+            <span>Exportar a Excel / CSV</span>
+          </button>
+
+          <button id="btn-import-json" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#DCD3C7] bg-[#FAF7F2] hover:bg-[#F2ECE4] text-cocoa-900 text-xs font-bold transition-all">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            <span>Restaurar Copia de Seguridad</span>
+          </button>
+          
+          <input type="file" id="import-file-input" accept=".json" class="hidden">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =======================================================================
+       Modales Nativos (<dialog>)
+       ======================================================================= -->
+  
+  <!-- Modal 1: Confirmar Eliminación -->
+  <dialog id="modal-delete" class="p-6 max-w-sm w-full mx-auto backdrop:bg-black/50">
+    <div class="space-y-4 text-center">
+      <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-cocoa-900">¿Eliminar este pedido?</h3>
+        <p id="delete-order-info" class="text-xs text-[#7A6A60] mt-1">
+          Esta acción no se puede deshacer y borrará el registro del almacenamiento local.
+        </p>
+      </div>
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button id="btn-cancel-delete" class="px-4 py-2 rounded-xl border border-[#DCD3C7] text-xs font-semibold text-cocoa-900 hover:bg-gray-100">
+          Cancelar
+        </button>
+        <button id="btn-confirm-delete" class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs">
+          Sí, eliminar
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal 2: Detalle Completo de Pedido -->
+  <dialog id="modal-detail" class="p-6 max-w-lg w-full mx-auto backdrop:bg-black/50">
+    <div class="space-y-5">
+      <div class="flex items-start justify-between border-b border-[#F0EAE1] pb-3">
+        <div>
+          <span id="detail-order-id" class="text-xs font-mono font-bold text-cookie-700"></span>
+          <h3 id="detail-customer-name" class="text-lg font-bold text-cocoa-900"></h3>
+        </div>
+        <button id="btn-close-detail" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="detail-content-body" class="space-y-3 text-xs sm:text-sm text-[#4A3E37]">
+        <!-- Contenido inyectado dinámicamente -->
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#F0EAE1]">
+        <button id="btn-ticket-from-detail" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#DCD3C7] text-cocoa-900 text-xs font-bold hover:bg-[#F2ECE4]">
+          <i data-lucide="receipt" class="w-4 h-4"></i>
+          <span>Comprobante</span>
+        </button>
+        <a id="detail-whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold">
+          <i data-lucide="message-circle" class="w-4 h-4"></i>
+          <span>WhatsApp</span>
+        </a>
+        <button id="btn-edit-from-detail" class="px-4 py-2 rounded-xl bg-cookie-500 hover:bg-cookie-600 text-white text-xs font-bold">
+          Editar Pedido
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal 3: Comprobante / Ticket de Entrega Imprimible -->
+  <dialog id="modal-receipt" class="p-4 sm:p-6 max-w-md w-full mx-auto backdrop:bg-black/50">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-[#F0EAE1] pb-3 no-print">
+        <h3 class="font-bold text-base text-cocoa-900 flex items-center gap-2">
+          <i data-lucide="receipt" class="w-4 h-4 text-cookie-600"></i>
+          Comprobante de Entrega
+        </h3>
+        <button id="btn-close-receipt" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Contenedor del Comprobante -->
+      <div id="receipt-container" class="overflow-y-auto max-h-[70vh]">
+        <!-- Inyectado dinámicamente -->
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#F0EAE1] no-print">
+        <button id="btn-print-receipt" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cookie-500 hover:bg-cookie-600 text-white text-xs font-bold shadow-xs">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Imprimir Ticket</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal 4: Configuración del Taller -->
+  <dialog id="modal-settings" class="p-6 max-w-md w-full mx-auto backdrop:bg-black/50">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
+        <h3 class="font-bold text-base text-cocoa-900 flex items-center gap-2">
+          <i data-lucide="settings" class="w-5 h-5 text-cookie-500"></i>
+          Configuración del Emprendimiento
+        </h3>
+        <button id="btn-close-settings" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="settings-form" class="space-y-4">
+        <div class="space-y-1">
+          <label for="setting-business-name" class="block text-xs font-bold text-cocoa-900">
+            Nombre del Taller / Negocio
+          </label>
+          <input type="text" id="setting-business-name" required
+            class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 outline-none">
+        </div>
+
+        <div class="space-y-1">
+          <label for="setting-phone" class="block text-xs font-bold text-cocoa-900">
+            Teléfono comercial / WhatsApp
+          </label>
+          <input type="tel" id="setting-phone"
+            class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 outline-none">
+        </div>
+
+        <div class="space-y-1">
+          <label for="setting-currency-symbol" class="block text-xs font-bold text-cocoa-900">
+            Símbolo de Moneda
+          </label>
+          <input type="text" id="setting-currency-symbol" value="$" maxlength="5"
+            class="w-24 px-3.5 py-2 rounded-xl border border-[#DCD3C7] text-sm font-bold text-center focus:border-cookie-500 outline-none">
+        </div>
+
+        <div class="space-y-1">
+          <label for="setting-footer-message" class="block text-xs font-bold text-cocoa-900">
+            Mensaje de agradecimiento en comprobantes
+          </label>
+          <textarea id="setting-footer-message" rows="2"
+            class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#F0EAE1]">
+          <button type="button" id="btn-cancel-settings" class="px-4 py-2 rounded-xl border border-[#DCD3C7] text-xs font-semibold text-cocoa-900 hover:bg-gray-100">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-cookie-500 hover:bg-cookie-600 text-white text-xs font-bold shadow-xs">
+            Guardar Ajustes
+          </button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Contenedor de Notificaciones Toast -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- =======================================================================
+       Scripts de la Aplicación (Vanilla JS Modular)
+       ======================================================================= -->
+  <script src="assets/js/orders.js"></script>
+  <script src="assets/js/production.js"></script>
+  <script src="assets/js/receipt.js"></script>
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+
+</html>

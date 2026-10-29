@@ -1,0 +1,10 @@
+# Constitución de Momentos Cookie
+
+Principios fundamentales e innegociables para el diseño, arquitectura y desarrollo de la aplicación web:
+
+1. **Simplicidad del stack y cero compilación:** SPA/PWA basada en HTML5 semántico, Tailwind CSS vía CDN, CSS moderno y JavaScript Vanilla modular. Ejecutable directamente sin bundlers ni transpiladores mediante doble clic (`file://`) o servidores estáticos ligeros (`npx serve`, `python -m http.server`).
+2. **Modelo de datos desacoplado y tipado conceptual:** Estructura de datos JSON limpia y extensible para los pedidos (datos de cliente, fechas clave, modalidades "Individuales" y "Combos/Kits", notas de diseño, estados y totales monetarios). Persistencia inicial en almacenamiento local (`localStorage` / `IndexedDB`), manteniendo el contrato listo para integrarse a futuro con backends en la nube (Supabase, Firebase o Google Sheets).
+3. **Ergonomía visual y diseño para taller/cocina (Mobile-First):** Interfaz optimizada para su uso ágil tanto en dispositivos móviles (en el entorno activo de la cocina o taller artesanal) como en pantallas de escritorio. Contraste nítido, elementos táctiles cómodos y jerarquía visual que minimice errores humanos en horas pico.
+4. **Planificación cronológica y semáforo de urgencia:** La pantalla de entregas debe priorizar la urgencia operativa: orden cronológico ascendente (lo próximo arriba) y vistas rápidas (*Hoy*, *Esta semana*, *Próximas semanas*, *Atrasados / Urgentes*) con alertas visuales inmediatas para pedidos vencidos o con entrega en menos de 24 horas.
+5. **Cálculos automáticos y validación sin fricción:** El registro de pedidos debe calcular subtotales y totales dinámicamente según cantidades, precios unitarios y extras (como empaques especiales o kits de pintura comestible), impidiendo inconsistencias numéricas y asegurando validación nativa de campos obligatorios.
+6. **Accesibilidad y componentes web estándar:** Uso de componentes nativos como `<dialog>` para modales, etiquetas semánticas (`<form>`, `<section>`, `<main>`), navegación completa por teclado y apego a estándares WCAG AA.

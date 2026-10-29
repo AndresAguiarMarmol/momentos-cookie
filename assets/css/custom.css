@@ -1,0 +1,216 @@
+/* ==========================================================================
+   assets/css/custom.css — Momentos Cookie
+   Estilos de taller artesanal, ergonomía táctil y semáforo de alta visibilidad
+   ========================================================================== */
+
+:root {
+  --color-vanilla-bg: #FAF7F2;
+  --color-warm-card: #FFFFFF;
+  --color-chocolate-dark: #2D241E;
+  --color-chocolate-light: #5A4A42;
+  --color-cookie-caramel: #D97724;
+  --color-cookie-caramel-hover: #B45309;
+  --color-border-soft: #E8E1D7;
+  
+  /* Semáforos de Entrega */
+  --color-atrasado-bg: #FEF2F2;
+  --color-atrasado-text: #991B1B;
+  --color-atrasado-border: #EF4444;
+
+  --color-urgente-bg: #FFF7ED;
+  --color-urgente-text: #9A3412;
+  --color-urgente-border: #F97316;
+
+  --color-semana-bg: #EFF6FF;
+  --color-semana-text: #1E40AF;
+  --color-semana-border: #3B82F6;
+
+  --color-proximas-bg: #F0FDF4;
+  --color-proximas-text: #166534;
+  --color-proximas-border: #22C55E;
+}
+
+body {
+  background-color: var(--color-vanilla-bg);
+  color: var(--color-chocolate-dark);
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ergonomía táctil para taller/cocina: mínimo 44px de área de interacción */
+.touch-target,
+button,
+input[type="button"],
+input[type="submit"],
+select,
+.nav-tab-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Transición suave entre vistas */
+.view-panel {
+  display: none;
+  animation: fadeInView 0.22s ease-out;
+}
+
+.view-panel.active {
+  display: block;
+}
+
+@keyframes fadeInView {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Insignias de Semáforo de Urgencia */
+.badge-atrasado {
+  background-color: var(--color-atrasado-bg);
+  color: var(--color-atrasado-text);
+  border: 1.5px solid var(--color-atrasado-border);
+}
+
+.badge-urgente {
+  background-color: var(--color-urgente-bg);
+  color: var(--color-urgente-text);
+  border: 1.5px solid var(--color-urgente-border);
+}
+
+.badge-semana {
+  background-color: var(--color-semana-bg);
+  color: var(--color-semana-text);
+  border: 1.5px solid var(--color-semana-border);
+}
+
+.badge-proximas {
+  background-color: var(--color-proximas-bg);
+  color: var(--color-proximas-text);
+  border: 1.5px solid var(--color-proximas-border);
+}
+
+/* Tarjetas de pedido con hover y elevación accesible */
+.order-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  border: 1px solid var(--color-border-soft);
+  background-color: #FFFFFF;
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(45, 36, 30, 0.08);
+}
+
+.order-card-urgent {
+  border-left: 5px solid var(--color-atrasado-border) !important;
+}
+
+.order-card-warning {
+  border-left: 5px solid var(--color-urgente-border) !important;
+}
+
+.order-card-info {
+  border-left: 5px solid var(--color-semana-border) !important;
+}
+
+.order-card-normal {
+  border-left: 5px solid var(--color-proximas-border) !important;
+}
+
+/* Segmented Control para modalidad Individual vs Combo */
+.segment-btn {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+}
+
+.segment-btn.active {
+  background-color: var(--color-cookie-caramel);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(217, 119, 36, 0.3);
+}
+
+/* Diálogos nativos accesibles */
+dialog::backdrop {
+  background: rgba(45, 36, 30, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+dialog {
+  border-radius: 1rem;
+  border: 1px solid var(--color-border-soft);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Toasts flotantes para taller */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  animation: slideToast 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideToast {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Estilos de Impresión */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  header, nav, #toast-container, .no-print, button {
+    display: none !important;
+  }
+  .order-card {
+    box-shadow: none !important;
+    border: 1px solid #CCC !important;
+    page-break-inside: avoid;
+  }
+
+  body.printing-receipt main {
+    display: none !important;
+  }
+
+  body.printing-receipt dialog#modal-receipt {
+    display: block !important;
+    position: static !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+
+  body.printing-receipt #printable-receipt {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    max-width: 380px !important;
+  }
+}
