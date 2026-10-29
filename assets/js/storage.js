@@ -261,7 +261,14 @@ function createStorageService(options = {}) {
 
   function exportBackupJson() {
     const orders = getOrders();
-    return JSON.stringify(orders, null, 2);
+    const settings = getSettings();
+    return JSON.stringify({
+      version: '1.0',
+      exportDate: new Date().toISOString(),
+      totalOrders: orders.length,
+      settings,
+      orders
+    }, null, 2);
   }
 
   function exportOrdersCsv() {
@@ -274,17 +281,33 @@ function createStorageService(options = {}) {
   }
 
   function importBackupJson(rawJson, { mode = 'merge' } = {}) {
-    let items = rawJson;
-    if (typeof rawJson === 'string') {
-      try {
-        items = JSON.parse(rawJson);
-      } catch (err) {
-        return { success: false, error: 'JSON corrupto o inválido: ' + err.message };
+    const helper = (typeof Production !== 'undefined' ? Production : StorageProductionHelper);
+    const validacion = helper && helper.validarEstructuraBackup ? helper.validarEstructuraBackup(rawJson) : null;
+
+    let items = null;
+    let newSettings = null;
+
+    if (validacion) {
+      if (!validacion.valid && !validacion.valido) {
+        return { success: false, error: validacion.error };
       }
+      items = validacion.items;
+      newSettings = validacion.settings;
+    } else {
+      let parsed = rawJson;
+      if (typeof rawJson === 'string') {
+        try {
+          parsed = JSON.parse(rawJson);
+        } catch (err) {
+          return { success: false, error: 'JSON corrupto o inválido: ' + err.message };
+        }
+      }
+      items = Array.isArray(parsed) ? parsed : (parsed && parsed.orders);
+      newSettings = parsed && parsed.settings;
     }
 
     if (!Array.isArray(items)) {
-      return { success: false, error: 'El contenido debe ser un array de pedidos.' };
+      return { success: false, error: 'El contenido debe incluir un array de pedidos.' };
     }
 
     const current = getOrders();
@@ -293,15 +316,22 @@ function createStorageService(options = {}) {
     if (mode === 'replace') {
       finalOrders = items;
     } else {
-      const helper = (typeof Production !== 'undefined' ? Production : StorageProductionHelper);
       if (helper && helper.fusionarPedidos) {
         finalOrders = helper.fusionarPedidos(current, items);
       } else {
-        finalOrders = [...current, ...items];
+        const mapa = new Map();
+        for (const o of current) if (o && o.id) mapa.set(o.id, o);
+        for (const o of items) if (o && o.id) mapa.set(o.id, { ...(mapa.get(o.id) || {}), ...o });
+        finalOrders = Array.from(mapa.values());
       }
     }
 
     safeSet(STORAGE_KEYS.ORDERS, finalOrders);
+
+    if (newSettings && typeof newSettings === 'object') {
+      saveSettings(newSettings);
+    }
+
     return { success: true, count: finalOrders.length };
   }
 

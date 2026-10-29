@@ -24,6 +24,8 @@ test('Estructura semántica de index.html para Momentos Cookie', () => {
   assert.match(html, /id=["']btn-export-json["']/, 'Debe contener botón exportar JSON');
   assert.match(html, /id=["']btn-export-csv["']/, 'Debe contener botón exportar CSV');
   assert.match(html, /id=["']btn-import-json["']/, 'Debe contener botón importar JSON');
+  assert.match(html, /id=["']btn-header-backup["']/, 'Debe contener botón de respaldo en menú principal (#btn-header-backup)');
+  assert.match(html, /id=["']btn-header-restore["']/, 'Debe contener botón de recuperación en menú principal (#btn-header-restore)');
 
   // Formulario y campos clave
   assert.match(html, /id=["']order-form["']/, 'Debe contener el formulario #order-form');
@@ -37,6 +39,7 @@ test('Estructura semántica de index.html para Momentos Cookie', () => {
   assert.match(html, /<dialog[^>]*id=["']modal-detail["']/, 'Debe contener diálogo nativo modal-detail');
   assert.match(html, /<dialog[^>]*id=["']modal-receipt["']/, 'Debe contener diálogo nativo modal-receipt');
   assert.match(html, /<dialog[^>]*id=["']modal-settings["']/, 'Debe contener diálogo nativo modal-settings');
+  assert.match(html, /<dialog[^>]*id=["']modal-restore["']/, 'Debe contener diálogo nativo modal-restore');
 
   // Scripts modulares en orden
   assert.match(html, /src=["'][^"']*orders\.js["']/, 'Debe incluir orders.js');

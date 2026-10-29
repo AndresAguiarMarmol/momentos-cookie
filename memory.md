@@ -78,6 +78,17 @@ Valores permitidos para estados:
 
 ## 3. Historial de cambios
 
+### 2026-10-29 — Implementación de Spec 004: Respaldo y Recuperación en Menú Principal
+- **T1 a T4 completadas:** Agregados los botones táctiles `#btn-header-backup` ("Respaldar") y `#btn-header-restore` ("Recuperar") directamente en el `<header>` principal de la aplicación.
+- Implementado el diálogo nativo `<dialog id="modal-restore">` para restaurar copias de seguridad desde archivos `.json` locales con:
+  - Selector de archivo con arrastrar/soltar visual.
+  - Validación de integridad y previsualización de pedidos y fecha antes de aplicar.
+  - Selector de modo de restauración: *"Fusionar sin duplicar (Recomendado)"* vs *"Reemplazar toda la base de datos"*.
+  - Sincronización automática de pedidos y ajustes (`settings`).
+- Suite de pruebas unitarias ampliada a **37/37 pruebas pasando en verde con `node --test`** (incluyendo suite `tests/backup_restore.test.js`).
+- Verificación interactiva exitosa en navegador mediante Chrome DevTools.
+- Especificación [specs/004-respaldo-recuperacion/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/004-respaldo-recuperacion/spec.md) marcada como `implementada`.
+
 ### 2026-10-29 — Publicación del proyecto en GitHub (`AndresAguiarMarmol/momentos-cookie`)
 - Creado el repositorio público en GitHub: [https://github.com/AndresAguiarMarmol/momentos-cookie](https://github.com/AndresAguiarMarmol/momentos-cookie).
 - Historial de Git saneado e inicializado limpiamente en la rama `main` conteniendo exclusivamente el código fuente, especificaciones SDD, pruebas y assets de Momentos Cookie (eliminados vestigios del proyecto anterior).

@@ -42,7 +42,10 @@ function initApp() {
   // 8. Controladores de Comprobantes y Configuración del Taller (Spec 003)
   setupReceiptAndSettingsHandlers(storage);
 
-  // 9. Aplicar configuración de marca inicial y estado inicial del formulario
+  // 9. Controladores de Respaldo y Recuperación en Menú Principal (Spec 004)
+  setupHeaderBackupHandlers(storage);
+
+  // 10. Aplicar configuración de marca inicial y estado inicial del formulario
   if (window.UI) {
     if (window.UI.updateBusinessBranding) {
       window.UI.updateBusinessBranding(storage.getSettings());
@@ -508,6 +511,139 @@ function setupReceiptAndSettingsHandlers(storage) {
 
       if (modalSettings) modalSettings.close();
       refreshAllViews(storage);
+    });
+  }
+}
+
+function setupHeaderBackupHandlers(storage) {
+  const btnBackup = document.getElementById('btn-header-backup');
+  const btnRestore = document.getElementById('btn-header-restore');
+  const modalRestore = document.getElementById('modal-restore');
+  const btnCloseRestore = document.getElementById('btn-close-restore');
+  const btnCancelRestore = document.getElementById('btn-cancel-restore');
+  const btnBrowseFile = document.getElementById('btn-browse-file');
+  const dropzone = document.getElementById('restore-dropzone');
+  const fileInput = document.getElementById('restore-file-input');
+  const btnConfirmRestore = document.getElementById('btn-confirm-restore');
+
+  let loadedBackupContent = null;
+
+  if (btnBackup) {
+    btnBackup.addEventListener('click', () => {
+      const jsonStr = storage.exportBackupJson();
+      const fecha = new Date().toISOString().slice(0, 10);
+      if (window.UI && window.UI.downloadFile) {
+        window.UI.downloadFile(jsonStr, `momentos-cookie-backup-${fecha}.json`, 'application/json');
+        if (window.UI.showToast) {
+          window.UI.showToast('Copia de seguridad descargada en tu equipo.', 'success');
+        }
+      }
+    });
+  }
+
+  if (btnRestore) {
+    btnRestore.addEventListener('click', () => {
+      loadedBackupContent = null;
+      if (window.UI && window.UI.openRestoreModal) {
+        window.UI.openRestoreModal();
+        if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+      }
+    });
+  }
+
+  if (modalRestore) {
+    if (btnCloseRestore) btnCloseRestore.addEventListener('click', () => modalRestore.close());
+    if (btnCancelRestore) btnCancelRestore.addEventListener('click', () => modalRestore.close());
+  }
+
+  if (btnBrowseFile && fileInput) {
+    btnBrowseFile.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+  }
+
+  if (dropzone && fileInput) {
+    dropzone.addEventListener('click', () => {
+      fileInput.click();
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const fileNameEl = document.getElementById('restore-file-name');
+      if (fileNameEl) fileNameEl.textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        loadedBackupContent = event.target.result;
+        const helper = (typeof Production !== 'undefined' ? Production : (typeof window !== 'undefined' && window.Production));
+        const validacion = helper && helper.validarEstructuraBackup ? helper.validarEstructuraBackup(loadedBackupContent) : null;
+
+        const previewContainer = document.getElementById('restore-preview-container');
+        const errorBox = document.getElementById('restore-error-box');
+        const errorText = document.getElementById('restore-error-text');
+        const badgeCount = document.getElementById('restore-orders-count-badge');
+        const metaEl = document.getElementById('restore-preview-meta');
+
+        if (validacion && (validacion.valid || validacion.valido)) {
+          if (errorBox) errorBox.classList.add('hidden');
+          if (previewContainer) previewContainer.classList.remove('hidden');
+          if (badgeCount) badgeCount.textContent = `${validacion.count} pedido${validacion.count === 1 ? '' : 's'}`;
+          if (metaEl) {
+            const fechaStr = validacion.exportDate ? `Fecha de respaldo: ${new Date(validacion.exportDate).toLocaleDateString()}` : 'Copia de seguridad válida';
+            metaEl.textContent = `${fechaStr} · Versión ${validacion.version || '1.0'}`;
+          }
+          if (btnConfirmRestore) btnConfirmRestore.disabled = false;
+        } else {
+          if (previewContainer) previewContainer.classList.add('hidden');
+          if (errorBox) {
+            errorBox.classList.remove('hidden');
+            if (errorText) errorText.textContent = validacion?.error || 'El archivo seleccionado no contiene una copia de seguridad válida.';
+          }
+          if (btnConfirmRestore) btnConfirmRestore.disabled = true;
+        }
+        if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+      };
+
+      reader.onerror = () => {
+        if (window.UI && window.UI.showToast) {
+          window.UI.showToast('Error al leer el archivo en el equipo.', 'error');
+        }
+      };
+
+      reader.readAsText(file);
+    });
+  }
+
+  if (btnConfirmRestore) {
+    btnConfirmRestore.addEventListener('click', () => {
+      if (!loadedBackupContent) return;
+
+      const modeRadio = document.querySelector('input[name="restoreMode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'merge';
+
+      const res = storage.importBackupJson(loadedBackupContent, { mode });
+
+      if (res.success) {
+        if (window.UI) {
+          if (window.UI.showToast) {
+            window.UI.showToast(`Recuperación exitosa: ${res.count} pedidos sincronizados.`, 'success');
+          }
+          if (window.UI.updateBusinessBranding) {
+            window.UI.updateBusinessBranding(storage.getSettings());
+          }
+        }
+        if (modalRestore) modalRestore.close();
+        refreshAllViews(storage);
+      } else {
+        if (window.UI && window.UI.showToast) {
+          window.UI.showToast(`Error al restaurar: ${res.error}`, 'error');
+        }
+      }
     });
   }
 }

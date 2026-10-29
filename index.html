@@ -78,13 +78,26 @@
         </div>
       </div>
 
-      <!-- Resumen de Pedidos Activos y Botón de Ajustes -->
-      <div class="flex items-center gap-2">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-cookie-50 text-cookie-700 border border-cookie-200">
+      <!-- Resumen de Pedidos Activos, Respaldo/Recuperación y Ajustes -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-cookie-50 text-cookie-700 border border-cookie-200">
           <span class="w-2 h-2 rounded-full bg-cookie-500 animate-pulse"></span>
           <span id="active-orders-counter">0 pedidos activos</span>
         </span>
 
+        <!-- Botón Respaldar en el equipo -->
+        <button id="btn-header-backup" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl border border-[#DCD3C7] bg-[#FAF7F2] hover:bg-[#F2ECE4] text-cocoa-900 text-xs font-bold transition-all shadow-xs" title="Descargar copia de seguridad en este equipo (.json)">
+          <i data-lucide="download" class="w-4 h-4 text-cookie-600"></i>
+          <span class="hidden sm:inline">Respaldar</span>
+        </button>
+
+        <!-- Botón Recuperar desde el equipo -->
+        <button id="btn-header-restore" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl border border-[#DCD3C7] bg-[#FAF7F2] hover:bg-[#F2ECE4] text-cocoa-900 text-xs font-bold transition-all shadow-xs" title="Recuperar copia de seguridad desde archivo local">
+          <i data-lucide="upload" class="w-4 h-4 text-cookie-600"></i>
+          <span class="hidden sm:inline">Recuperar</span>
+        </button>
+
+        <!-- Botón de Configuración -->
         <button id="btn-open-settings" class="p-2 rounded-xl text-[#7A6A60] hover:text-cookie-600 hover:bg-[#F2ECE4] transition-colors" title="Configuración del taller">
           <i data-lucide="settings" class="w-5 h-5"></i>
         </button>
@@ -860,6 +873,91 @@
           </button>
         </div>
       </form>
+    </div>
+  </dialog>
+
+  <!-- Modal 5: Recuperación de Copia de Seguridad desde el Equipo (Spec 004) -->
+  <dialog id="modal-restore" class="p-6 max-w-md w-full mx-auto backdrop:bg-black/50">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
+        <h3 class="font-bold text-base text-cocoa-900 flex items-center gap-2">
+          <i data-lucide="upload-cloud" class="w-5 h-5 text-cookie-600"></i>
+          Recuperar Copia de Seguridad
+        </h3>
+        <button id="btn-close-restore" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-[#7A6A60]">
+        Selecciona un archivo de respaldo <span class="font-mono font-bold text-cookie-700">.json</span> guardado en este equipo para restaurar tus pedidos.
+      </p>
+
+      <!-- Zona de selección de archivo -->
+      <div id="restore-dropzone" class="border-2 border-dashed border-[#DCD3C7] hover:border-cookie-400 rounded-2xl p-5 text-center cursor-pointer transition-colors bg-[#FAF7F2]/50">
+        <input type="file" id="restore-file-input" accept=".json" class="hidden">
+        <div class="w-10 h-10 rounded-full bg-cookie-100 text-cookie-600 flex items-center justify-center mx-auto mb-2">
+          <i data-lucide="file-json" class="w-5 h-5"></i>
+        </div>
+        <button type="button" id="btn-browse-file" class="text-xs font-bold text-cookie-600 hover:text-cookie-800 underline">
+          Seleccionar archivo JSON
+        </button>
+        <span class="block text-[11px] text-[#8C7B72] mt-1" id="restore-file-name">Ningún archivo seleccionado</span>
+      </div>
+
+      <!-- Resumen previo del archivo cargado (oculto hasta validar) -->
+      <div id="restore-preview-container" class="hidden space-y-3 bg-cookie-50/70 border border-cookie-200 p-3.5 rounded-xl text-xs">
+        <div class="flex items-center justify-between border-b border-cookie-200/60 pb-2">
+          <span class="font-bold text-cocoa-900 flex items-center gap-1.5">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+            Archivo verificado
+          </span>
+          <span id="restore-orders-count-badge" class="px-2 py-0.5 rounded-full bg-cookie-200 text-cookie-800 font-bold text-[11px]">
+            0 pedidos
+          </span>
+        </div>
+
+        <div class="space-y-1 text-[#5A4A42]">
+          <p id="restore-preview-meta" class="text-[11px] text-[#7A6A60]"></p>
+          <p class="font-semibold text-cocoa-900 pt-1">¿Cómo deseas aplicar esta copia?</p>
+        </div>
+
+        <!-- Opciones de Modo: Fusión vs Reemplazo -->
+        <div class="space-y-2 pt-1">
+          <label class="flex items-start gap-2.5 p-2 rounded-lg bg-white border border-[#E8E1D7] cursor-pointer hover:bg-cookie-50/30">
+            <input type="radio" name="restoreMode" value="merge" checked class="mt-0.5 text-cookie-500 focus:ring-cookie-400">
+            <div>
+              <span class="font-bold text-cocoa-900 block text-xs">Fusionar sin duplicar (Recomendado)</span>
+              <span class="text-[11px] text-[#7A6A60] block leading-tight">Conserva los pedidos actuales y agrega los del archivo. Si un pedido ya existe, actualiza sus datos.</span>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-2.5 p-2 rounded-lg bg-white border border-[#E8E1D7] cursor-pointer hover:bg-cookie-50/30">
+            <input type="radio" name="restoreMode" value="replace" class="mt-0.5 text-cookie-500 focus:ring-cookie-400">
+            <div>
+              <span class="font-bold text-red-700 block text-xs">Reemplazar toda la base de datos</span>
+              <span class="text-[11px] text-[#7A6A60] block leading-tight">Borra los pedidos actuales y deja únicamente los que contiene este archivo de respaldo.</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Mensaje de error si el archivo falla -->
+      <div id="restore-error-box" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 text-red-600"></i>
+        <span id="restore-error-text">El archivo no es válido.</span>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#F0EAE1]">
+        <button type="button" id="btn-cancel-restore" class="px-4 py-2 rounded-xl border border-[#DCD3C7] text-xs font-semibold text-cocoa-900 hover:bg-gray-100">
+          Cancelar
+        </button>
+        <button type="button" id="btn-confirm-restore" disabled class="px-5 py-2 rounded-xl bg-cookie-500 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-cookie-600 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-2">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span>Confirmar Recuperación</span>
+        </button>
+      </div>
     </div>
   </dialog>
 

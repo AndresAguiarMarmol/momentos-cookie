@@ -566,6 +566,29 @@ function openReceiptModal(order, settings = {}) {
   modal.showModal();
 }
 
+function openRestoreModal() {
+  if (typeof document === 'undefined') return;
+  const modal = document.getElementById('modal-restore');
+  if (!modal) return;
+
+  const fileInput = document.getElementById('restore-file-input');
+  const fileName = document.getElementById('restore-file-name');
+  const preview = document.getElementById('restore-preview-container');
+  const errorBox = document.getElementById('restore-error-box');
+  const btnConfirm = document.getElementById('btn-confirm-restore');
+
+  if (fileInput) fileInput.value = '';
+  if (fileName) fileName.textContent = 'Ningún archivo seleccionado';
+  if (preview) preview.classList.add('hidden');
+  if (errorBox) errorBox.classList.add('hidden');
+  if (btnConfirm) btnConfirm.disabled = true;
+
+  const radioMerge = document.querySelector('input[name="restoreMode"][value="merge"]');
+  if (radioMerge) radioMerge.checked = true;
+
+  modal.showModal();
+}
+
 function openSettingsModal(settings = {}) {
   if (typeof document === 'undefined') return;
   const modal = document.getElementById('modal-settings');
@@ -806,6 +829,7 @@ const UIModule = {
   renderProductionView,
   openReceiptModal,
   openSettingsModal,
+  openRestoreModal,
   updateBusinessBranding,
   downloadFile,
   openDetailModal,

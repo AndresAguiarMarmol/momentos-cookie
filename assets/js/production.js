@@ -180,30 +180,47 @@ function generarCsvPedidos(pedidos = []) {
 
 function validarEstructuraBackup(data) {
   if (!data) {
-    return { valid: false, error: 'Datos no proporcionados.' };
+    return { valid: false, valido: false, error: 'Datos no proporcionados.' };
   }
 
-  let items = data;
+  let parsed = data;
   if (typeof data === 'string') {
     try {
-      items = JSON.parse(data);
+      parsed = JSON.parse(data);
     } catch {
-      return { valid: false, error: 'El archivo no contiene un JSON válido.' };
+      return { valid: false, valido: false, error: 'El archivo no contiene un JSON válido.' };
     }
   }
 
+  if (!parsed || typeof parsed !== 'object') {
+    return { valid: false, valido: false, error: 'Formato de respaldo inválido.' };
+  }
+
+  const items = Array.isArray(parsed) ? parsed : parsed.orders;
+  const settings = parsed.settings || null;
+  const version = parsed.version || '1.0';
+
   if (!Array.isArray(items)) {
-    return { valid: false, error: 'El archivo de respaldo debe contener una lista (array) de pedidos.' };
+    return { valid: false, valido: false, error: 'El archivo de respaldo debe contener una lista de pedidos.' };
   }
 
   for (let i = 0; i < items.length; i++) {
     const p = items[i];
-    if (!p || typeof p !== 'object' || !p.id || !p.customer || !p.status) {
-      return { valid: false, error: `El pedido en posición ${i + 1} no cumple con el esquema requerido (ID, cliente y estado).` };
+    if (!p || typeof p !== 'object' || !p.id || !p.customer) {
+      return { valid: false, valido: false, error: `El pedido en posición ${i + 1} no cumple con el esquema requerido (ID y cliente).` };
     }
   }
 
-  return { valid: true, error: null, count: items.length };
+  return {
+    valid: true,
+    valido: true,
+    error: null,
+    count: items.length,
+    items,
+    settings,
+    version,
+    exportDate: parsed.exportDate || null
+  };
 }
 
 function fusionarPedidos(pedidosLocales = [], pedidosImportados = []) {
