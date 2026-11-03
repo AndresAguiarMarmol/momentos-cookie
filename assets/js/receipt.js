@@ -142,7 +142,8 @@ function generarTicketEntregaHtml(order, settings = {}) {
       
       <!-- Encabezado del Negocio -->
       <div style="text-align: center; border-bottom: 2px solid #2D241E; padding-bottom: 10px; margin-bottom: 10px;">
-        <div style="font-size: 18px; font-weight: bold; letter-spacing: -0.5px;">🍪 ${businessName}</div>
+        <img src="assets/img/logo.jpg" alt="${businessName}" style="width: 68px; height: 68px; object-fit: cover; border-radius: 50%; margin: 0 auto 8px auto; display: block; border: 1px solid #E8E1D7;">
+        <div style="font-size: 18px; font-weight: bold; letter-spacing: -0.5px;">${businessName}</div>
         <div style="font-size: 11px; color: #666; margin-top: 2px;">Repostería Artesanal & Galletas de Diseño</div>
         ${phone ? `<div style="font-size: 11px; font-weight: bold; color: #555; margin-top: 2px;">Tel / WhatsApp: ${phone}</div>` : ''}
       </div>

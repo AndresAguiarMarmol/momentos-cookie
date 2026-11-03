@@ -102,10 +102,21 @@ Valores permitidos para estados:
 - **Formularios con cambio condicional dinámico:** Al alternar entre *Galletas Individuales* y *Combo / Kit*, se muestran/ocultan automáticamente los campos de tipo de empaque, selector de kit de pintura y cantidad de galletas incluidas.
 - **Gestión Multi-Ítem por Pedido (Spec 005):** Cada pedido permite registrar $N$ artículos heterogéneos (mezclando galletas individuales de distintos sabores y combos especiales con kits de pintura). Al pulsar "＋ Agregar otro ítem", el sistema copia por defecto el tipo del ítem precedente para acelerar la carga repetitiva.
 - **Consolidación Automática por Cliente y Fecha (Spec 006):** Múltiples órdenes destinadas al mismo cliente en la misma fecha de entrega se fusionan en una sola orden multi-ítem unificada mediante `consolidarPedidosPorClienteYFecha`. Normaliza nombres de clientes tolerando tildes, barras y variantes tipográficas, fusiona ítems, suma totales financieros y abonos, manteniendo cero pérdida de información y recalculando el estado de pago.
+- **Logotipo Oficial e Identidad de Marca (Spec 007):** Imagen de marca oficial alojada en `assets/img/logo.jpg` e integrada en el `<header>` principal, favicon de la pestaña del navegador, archivo PWA `manifest.json` y en la cabecera de los comprobantes/tickets imprimibles de entrega (`receipt.js`), sustituyendo el ícono genérico previo por la ilustración auténtica del taller.
 
 ---
 
 ## 3. Historial de cambios
+
+### 2026-11-03 — Implementación de Spec 007: Logotipo Oficial e Identidad Visual de la Aplicación
+- **T1 a T4 completadas:** Integración del archivo de imagen oficial de Momentos Cookie en todos los puntos de contacto visual clave.
+  1. Guardado del recurso en `assets/img/logo.jpg`.
+  2. En [index.html](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/index.html): añadido `<link rel="icon">` para el favicon de la pestaña y reemplazado el contenedor con icono SVG genérico en el header por `<img src="assets/img/logo.jpg" alt="Momentos Cookie" class="w-11 h-11 rounded-2xl object-cover shadow-xs border border-cookie-200">`.
+  3. En [manifest.json](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/manifest.json): agregada la referencia a `assets/img/logo.jpg` en la colección de iconos de la PWA.
+  4. En [assets/js/receipt.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/receipt.js): incorporada la imagen circular del logotipo oficial en la cabecera de los comprobantes y tickets térmicos impresos de entrega.
+- Suite de pruebas unitarias ampliada a **54/54 pruebas pasando al 100% en verde con `node --test`** (suite `tests/logo.test.js`).
+- Verificación visual interactiva exitosa en navegador mediante Chrome DevTools MCP.
+- Especificación [specs/007-logotipo-aplicacion/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/007-logotipo-aplicacion/spec.md) marcada como `implementada`.
 
 ### 2026-10-29 — Implementación de Spec 006: Consolidación de Pedidos por Cliente y Fecha de Entrega
 - **T1 a T3 completadas:** Consolidación de pedidos existentes por cliente y fecha comprometida de entrega en una sola orden con múltiples ítems.
