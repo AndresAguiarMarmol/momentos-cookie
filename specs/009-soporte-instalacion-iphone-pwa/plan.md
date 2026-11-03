@@ -60,3 +60,4 @@
   5. Verificar que `manifest.json` contiene `display: "standalone"`, `start_url` y `scope`.
   6. Verificar que `sw.js` incluye `assets/img/logo.jpg`, `production.js` y `receipt.js` en su lista de caché.
   7. Verificar que el modal de ajustes incluye la guía de instalación para iPhone.
+

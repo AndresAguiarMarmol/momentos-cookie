@@ -112,30 +112,35 @@
 
     <!-- Barra de Navegación por Pestañas (Mobile First) -->
     <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#F2ECE4] flex gap-2 overflow-x-auto py-2 no-scrollbar" aria-label="Secciones de la aplicación">
-      <button id="tab-planning" data-view="view-planning" class="nav-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-cookie-500 text-white shadow-xs">
+      <button id="tab-planning" data-view="view-planning" class="nav-tab-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-cookie-500 text-white shadow-xs whitespace-nowrap">
         <i data-lucide="calendar-clock" class="w-4 h-4"></i>
-        <span>Planificación de Entregas</span>
+        <span class="sm:hidden">Planificación</span>
+        <span class="hidden sm:inline">Planificación de Entregas</span>
       </button>
 
-      <button id="tab-orders" data-view="view-orders" class="nav-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4]">
+      <button id="tab-orders" data-view="view-orders" class="nav-tab-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4] whitespace-nowrap">
         <i data-lucide="clipboard-list" class="w-4 h-4"></i>
-        <span>Todos los Pedidos</span>
+        <span class="sm:hidden">Pedidos</span>
+        <span class="hidden sm:inline">Todos los Pedidos</span>
       </button>
 
-      <button id="btn-nav-pending-balance" class="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-sm font-semibold transition-all text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 shadow-2xs whitespace-nowrap" title="Ver pedidos con saldo pendiente de cobro">
+      <button id="btn-nav-pending-balance" class="flex items-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 shadow-2xs whitespace-nowrap" title="Ver pedidos con saldo pendiente de cobro">
         <i data-lucide="banknote" class="w-4 h-4 text-amber-600"></i>
-        <span>Saldo Pendiente</span>
-        <span id="pending-balance-badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-200 text-amber-900 ml-0.5">0</span>
+        <span class="sm:hidden">Con Saldo</span>
+        <span class="hidden sm:inline">Saldo Pendiente</span>
+        <span id="pending-balance-badge" class="px-1.5 sm:px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-amber-200 text-amber-900 ml-0.5">0</span>
       </button>
 
-      <button id="tab-production" data-view="view-production" class="nav-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4]">
+      <button id="tab-production" data-view="view-production" class="nav-tab-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4] whitespace-nowrap">
         <i data-lucide="chef-hat" class="w-4 h-4"></i>
-        <span>Producción & Métricas</span>
+        <span class="sm:hidden">Producción</span>
+        <span class="hidden sm:inline">Producción & Métricas</span>
       </button>
 
-      <button id="tab-form" data-view="view-form" class="nav-tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4]">
+      <button id="tab-form" data-view="view-form" class="nav-tab-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-[#6B5A50] hover:bg-[#F2ECE4] whitespace-nowrap">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
-        <span>Nuevo Pedido</span>
+        <span class="sm:hidden">Nuevo</span>
+        <span class="hidden sm:inline">Nuevo Pedido</span>
       </button>
     </nav>
   </header>
@@ -155,7 +160,8 @@
         <div>
           <h2 class="text-base sm:text-lg font-bold text-cocoa-900 flex items-center gap-2">
             <i data-lucide="calendar" class="w-5 h-5 text-cookie-500"></i>
-            Entregas Organizadas por Urgencia
+            <span class="sm:hidden">Planificación de Entregas</span>
+            <span class="hidden sm:inline">Entregas Organizadas por Urgencia</span>
           </h2>
           <p class="text-xs text-[#7A6A60]">
             Pedidos ordenados por fecha comprometida. Atiende primero los destacados en rojo y naranja.
@@ -181,7 +187,8 @@
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full bg-red-500"></span>
             <h3 class="font-bold text-sm sm:text-base text-red-800 flex items-center gap-1.5">
-              Atrasados / Requieren Atención Inmediata
+              <span class="sm:hidden">Atrasados / Urgentes</span>
+              <span class="hidden sm:inline">Atrasados / Requieren Atención Inmediata</span>
             </h3>
           </div>
           <span id="count-atrasados" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
@@ -199,7 +206,8 @@
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full bg-orange-500"></span>
             <h3 class="font-bold text-sm sm:text-base text-orange-900 flex items-center gap-1.5">
-              Entregas de Hoy (o próximas 24 horas)
+              <span class="sm:hidden">Entregas de Hoy</span>
+              <span class="hidden sm:inline">Entregas de Hoy (o próximas 24 horas)</span>
             </h3>
           </div>
           <span id="count-hoy" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-900 border border-orange-200">
@@ -217,7 +225,8 @@
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full bg-blue-500"></span>
             <h3 class="font-bold text-sm sm:text-base text-blue-900 flex items-center gap-1.5">
-              Esta Semana (Próximos 7 días)
+              <span class="sm:hidden">Esta Semana</span>
+              <span class="hidden sm:inline">Esta Semana (Próximos 7 días)</span>
             </h3>
           </div>
           <span id="count-esta-semana" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-900 border border-blue-200">
@@ -355,7 +364,8 @@
           <div class="space-y-4">
             <h3 class="text-xs font-bold text-cookie-700 uppercase tracking-wider flex items-center gap-2">
               <i data-lucide="user" class="w-4 h-4"></i>
-              1. Datos de Contacto del Cliente
+              <span class="sm:hidden">1. Datos del Cliente</span>
+              <span class="hidden sm:inline">1. Datos de Contacto del Cliente</span>
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -452,7 +462,8 @@
           <div class="space-y-4 border-t border-[#F0EAE1] pt-5">
             <h3 class="text-xs font-bold text-cookie-700 uppercase tracking-wider flex items-center gap-2">
               <i data-lucide="badge-dollar-sign" class="w-4 h-4"></i>
-              4. Estado del Pedido y Pago
+              <span class="sm:hidden">4. Estado y Pago</span>
+              <span class="hidden sm:inline">4. Estado del Pedido y Pago</span>
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -535,7 +546,8 @@
         <div>
           <h2 class="text-base sm:text-lg font-bold text-cocoa-900 flex items-center gap-2">
             <i data-lucide="chef-hat" class="w-5 h-5 text-cookie-500"></i>
-            Planilla de Horneado & Balance de Taller
+            <span class="sm:hidden">Horneado & Balance</span>
+            <span class="hidden sm:inline">Planilla de Horneado & Balance de Taller</span>
           </h2>
           <p class="text-xs text-[#7A6A60]">
             Consolidado de unidades a producir para la cocina y métricas financieras de cobros.
@@ -753,9 +765,10 @@
   <dialog id="modal-settings" class="p-6 max-w-md w-full mx-auto backdrop:bg-black/50">
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
-        <h3 class="font-bold text-base text-cocoa-900 flex items-center gap-2">
+        <h3 class="font-bold text-base sm:text-lg text-cocoa-900 flex items-center gap-2">
           <i data-lucide="settings" class="w-5 h-5 text-cookie-500"></i>
-          Configuración del Emprendimiento
+          <span class="sm:hidden">Configuración</span>
+          <span class="hidden sm:inline">Configuración del Emprendimiento</span>
         </h3>
         <button id="btn-close-settings" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -826,9 +839,10 @@
   <dialog id="modal-restore" class="p-6 max-w-md w-full mx-auto backdrop:bg-black/50">
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-[#F0EAE1] pb-3">
-        <h3 class="font-bold text-base text-cocoa-900 flex items-center gap-2">
+        <h3 class="font-bold text-base sm:text-lg text-cocoa-900 flex items-center gap-2">
           <i data-lucide="upload-cloud" class="w-5 h-5 text-cookie-600"></i>
-          Recuperar Copia de Seguridad
+          <span class="sm:hidden">Recuperar Datos</span>
+          <span class="hidden sm:inline">Recuperar Copia de Seguridad</span>
         </h3>
         <button id="btn-close-restore" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
           <i data-lucide="x" class="w-5 h-5"></i>

@@ -50,3 +50,4 @@ test('T1.7: index.html incluye guía explicativa para instalación en iPhone en 
   assert.match(html, /iPhone|iOS/i, 'Debe mencionar instrucciones para iPhone o iOS');
   assert.match(html, /Agregar a inicio/i, 'Debe indicar cómo agregar a pantalla de inicio');
 });
+

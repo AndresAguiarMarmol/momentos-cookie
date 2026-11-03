@@ -105,10 +105,20 @@ Valores permitidos para estados:
 - **Logotipo Oficial e Identidad de Marca (Spec 007):** Imagen de marca oficial alojada en `assets/img/logo.jpg` e integrada en el `<header>` principal, favicon de la pestaña del navegador, archivo PWA `manifest.json` y en la cabecera de los comprobantes/tickets imprimibles de entrega (`receipt.js`), sustituyendo el ícono genérico previo por la ilustración auténtica del taller.
 - **Acceso Rápido y Filtrado por Saldo Pendiente (Spec 008):** Botón `#btn-nav-pending-balance` en la barra de navegación principal con badge dinámico de conteo de pedidos con deuda (`#pending-balance-badge`) y chip de filtro en `index.html` con `data-status="saldo-pendiente"`. Al activarse, navega y filtra reactivamente solo los pedidos con saldo por cobrar, exhibiendo en el badge de resumen la cantidad y el monto acumulado por cobrar.
 - **Soporte PWA Standalone para iOS / iPhone (Spec 009):** Metaetiquetas de Web App de Apple (`apple-mobile-web-app-capable="yes"`, `apple-mobile-web-app-status-bar-style="default"`, `apple-mobile-web-app-title="Momentos Cookie"` y `apple-touch-icon`), directiva `viewport-fit=cover`, reglas CSS de áreas seguras (`env(safe-area-inset-*)`), Service Worker `momentos-cookie-v2` para funcionamiento offline completo y guía accesible de instalación para iPhone en el modal de ajustes.
+- **Títulos y Tipografía Responsiva (Spec 010):** Adaptación bidireccional de títulos mediante variantes `sm:hidden` para vista móvil (iPhone/pantallas reducidas) y `hidden sm:inline` para PC. Aplica a botones de la barra de navegación, encabezados de semáforo de entrega (Atrasados, Hoy, Esta Semana), planilla de horneado y títulos de modales, asegurando lectura limpia y sin cortes sin alterar la lógica de negocio.
 
 ---
 
 ## 3. Historial de cambios
+
+### 2026-11-03 — Implementación de Spec 010: Ajuste de Títulos Responsivos para iPhone y PC
+- **T1 a T4 completadas:** Adaptación tipográfica y responsiva de títulos y encabezados en toda la aplicación.
+  1. En [index.html](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/index.html): variantes compactas en móvil (`sm:hidden`) y extendidas en PC (`hidden sm:inline`) en la barra de navegación (`Planificación`, `Pedidos`, `Con Saldo`, `Producción`, `Nuevo`).
+  2. En los bloques de semáforo de planificación: títulos compactos en iPhone (`Atrasados / Urgentes`, `Entregas de Hoy`, `Esta Semana`) evitando desbordamientos contra las insignias de conteo.
+  3. En la vista de producción, pasos del formulario y modales (Ajustes, Recuperación): tipografía responsiva `text-base sm:text-lg` y textos adaptados.
+- Suite de pruebas unitarias ampliada a **70/70 pruebas pasando al 100% en verde con `node --test`** (suite `tests/responsive_titles.test.js`).
+- Cero alteración de la lógica operativa, cálculo de totales ni persistencia de datos.
+- Especificación [specs/010-ajuste-titulos-responsivos/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/010-ajuste-titulos-responsivos/spec.md) marcada como `implementada`.
 
 ### 2026-11-03 — Implementación de Spec 009: Preparación para Instalación en iPhone (PWA iOS Standalone)
 - **T1 a T4 completadas:** Configuración e integración completa para permitir la instalación y uso como app nativa en iPhone (iOS / Safari).
