@@ -35,6 +35,14 @@ body {
   color: var(--color-chocolate-dark);
   font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-tap-highlight-color: transparent;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Soporte para iPhone / iOS (Safe Area Insets: Notch, Isla Dinámica y Home Bar) */
+header {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* Ergonomía táctil para taller/cocina: mínimo 44px de área de interacción */

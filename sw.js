@@ -2,12 +2,15 @@
  * sw.js — Service Worker ligero para Momentos Cookie (PWA)
  */
 
-const CACHE_NAME = 'momentos-cookie-v1';
+const CACHE_NAME = 'momentos-cookie-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './assets/css/custom.css',
+  './assets/img/logo.jpg',
   './assets/js/orders.js',
+  './assets/js/production.js',
+  './assets/js/receipt.js',
   './assets/js/storage.js',
   './assets/js/ui.js',
   './assets/js/main.js',

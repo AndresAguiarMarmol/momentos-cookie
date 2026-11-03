@@ -1,8 +1,9 @@
 {
   "name": "Momentos Cookie - Control de Pedidos",
-  "short_name": "MomentosCookie",
+  "short_name": "Momentos Cookie",
   "description": "Sistema de gestión y planificación de pedidos de galletas artesanales y personalizadas.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#FAF7F2",
   "theme_color": "#D97724",

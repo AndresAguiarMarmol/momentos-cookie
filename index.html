@@ -3,11 +3,18 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>Momentos Cookie | Gestión y Control de Pedidos</title>
   <meta name="description"
     content="Aplicación de control y planificación de entregas de galletas artesanales y combos personalizados para Momentos Cookie.">
   <meta name="theme-color" content="#D97724">
+
+  <!-- Soporte PWA Standalone para iOS / iPhone -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Momentos Cookie">
+  <link rel="apple-touch-icon" href="assets/img/logo.jpg">
+
   <link rel="icon" type="image/jpeg" href="assets/img/logo.jpg">
   <link rel="manifest" href="manifest.json">
 
@@ -786,6 +793,21 @@
           </label>
           <textarea id="setting-footer-message" rows="2"
             class="w-full px-3.5 py-2 rounded-xl border border-[#DCD3C7] text-sm focus:border-cookie-500 outline-none"></textarea>
+        </div>
+
+        <!-- Tarjeta Informativa de Instalación en iPhone / iOS -->
+        <div class="p-3.5 rounded-xl bg-cookie-50 border border-cookie-200 text-cocoa-900 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-xs text-cookie-800">
+            <i data-lucide="smartphone" class="w-4 h-4 text-cookie-600"></i>
+            <span>Instalar en iPhone / iPad (iOS)</span>
+          </div>
+          <p class="text-[11px] text-[#6B5A50] leading-relaxed">
+            Para usar Momentos Cookie como app en tu pantalla de inicio de iPhone:
+          </p>
+          <ol class="text-[11px] text-[#5A4A42] space-y-1 list-decimal list-inside font-medium">
+            <li>Abre esta página en <strong>Safari</strong> y toca el botón <strong>Compartir</strong> (ícono ⎋ abajo).</li>
+            <li>Desliza y selecciona <strong>"Agregar a inicio"</strong>.</li>
+          </ol>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-3 border-t border-[#F0EAE1]">

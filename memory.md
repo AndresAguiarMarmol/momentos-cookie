@@ -104,10 +104,22 @@ Valores permitidos para estados:
 - **Consolidación Automática por Cliente y Fecha (Spec 006):** Múltiples órdenes destinadas al mismo cliente en la misma fecha de entrega se fusionan en una sola orden multi-ítem unificada mediante `consolidarPedidosPorClienteYFecha`. Normaliza nombres de clientes tolerando tildes, barras y variantes tipográficas, fusiona ítems, suma totales financieros y abonos, manteniendo cero pérdida de información y recalculando el estado de pago.
 - **Logotipo Oficial e Identidad de Marca (Spec 007):** Imagen de marca oficial alojada en `assets/img/logo.jpg` e integrada en el `<header>` principal, favicon de la pestaña del navegador, archivo PWA `manifest.json` y en la cabecera de los comprobantes/tickets imprimibles de entrega (`receipt.js`), sustituyendo el ícono genérico previo por la ilustración auténtica del taller.
 - **Acceso Rápido y Filtrado por Saldo Pendiente (Spec 008):** Botón `#btn-nav-pending-balance` en la barra de navegación principal con badge dinámico de conteo de pedidos con deuda (`#pending-balance-badge`) y chip de filtro en `index.html` con `data-status="saldo-pendiente"`. Al activarse, navega y filtra reactivamente solo los pedidos con saldo por cobrar, exhibiendo en el badge de resumen la cantidad y el monto acumulado por cobrar.
+- **Soporte PWA Standalone para iOS / iPhone (Spec 009):** Metaetiquetas de Web App de Apple (`apple-mobile-web-app-capable="yes"`, `apple-mobile-web-app-status-bar-style="default"`, `apple-mobile-web-app-title="Momentos Cookie"` y `apple-touch-icon`), directiva `viewport-fit=cover`, reglas CSS de áreas seguras (`env(safe-area-inset-*)`), Service Worker `momentos-cookie-v2` para funcionamiento offline completo y guía accesible de instalación para iPhone en el modal de ajustes.
 
 ---
 
 ## 3. Historial de cambios
+
+### 2026-11-03 — Implementación de Spec 009: Preparación para Instalación en iPhone (PWA iOS Standalone)
+- **T1 a T4 completadas:** Configuración e integración completa para permitir la instalación y uso como app nativa en iPhone (iOS / Safari).
+  1. En [index.html](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/index.html): metaetiquetas específicas para Apple (`apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, `apple-mobile-web-app-title="Momentos Cookie"`), `<link rel="apple-touch-icon" href="assets/img/logo.jpg">`, directiva `viewport-fit=cover` y guía visual en el modal de configuración.
+  2. En [assets/css/custom.css](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/css/custom.css): adaptación de áreas seguras (`env(safe-area-inset-top)` en header y `env(safe-area-inset-bottom)` en body) para respetar notch, Dynamic Island y barra de inicio de iOS.
+  3. En [manifest.json](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/manifest.json): metadatos PWA completos con `display: "standalone"`, `scope: "./"`, y nombre corto `"Momentos Cookie"`.
+  4. En [sw.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/sw.js): actualización de versión de caché a `momentos-cookie-v2` incorporando `logo.jpg`, `production.js` y `receipt.js` para carga offline instantánea.
+- Suite de pruebas unitarias ampliada a **67/67 pruebas pasando al 100% en verde con `node --test`** (suite `tests/ios_pwa.test.js`).
+- Verificación visual interactiva exitosa en viewport móvil de iPhone (390x844) mediante Chrome DevTools MCP.
+- Cero alteración de la operatividad existente de pedidos, semáforo, balances ni persistencia.
+- Especificación [specs/009-soporte-instalacion-iphone-pwa/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/009-soporte-instalacion-iphone-pwa/spec.md) marcada como `implementada`.
 
 ### 2026-11-03 — Implementación de Spec 008: Botón de Acceso Rápido y Filtro para Pedidos con Saldo Pendiente
 - **T1 a T3 completadas:** Implementación del botón de cobranza rápida y filtro dedicado para pedidos con saldo por cobrar.
