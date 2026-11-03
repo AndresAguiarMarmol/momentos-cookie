@@ -136,12 +136,33 @@ function setupSearchAndFilterHandlers(storage) {
   filterChips.forEach(chip => {
     chip.addEventListener('click', () => {
       filterChips.forEach(c => {
-        c.className = 'filter-chip px-3 py-1.5 rounded-lg bg-[#F0EAE1] text-[#5A4A42] hover:bg-[#E5DDD2] transition-colors';
+        const isPending = c.getAttribute('data-status') === 'saldo-pendiente';
+        c.className = `filter-chip px-3 py-1.5 rounded-lg bg-[#F0EAE1] text-[#5A4A42] hover:bg-[#E5DDD2] transition-colors ${isPending ? 'flex items-center gap-1 font-semibold' : ''}`;
       });
-      chip.className = 'filter-chip px-3 py-1.5 rounded-lg bg-cookie-500 text-white font-semibold transition-colors';
+      const isPending = chip.getAttribute('data-status') === 'saldo-pendiente';
+      chip.className = `filter-chip px-3 py-1.5 rounded-lg bg-cookie-500 text-white font-semibold transition-colors ${isPending ? 'flex items-center gap-1' : ''}`;
       triggerSearch();
     });
   });
+
+  // Botón directo en la barra de navegación para pedidos con saldo pendiente
+  const btnPendingNav = document.getElementById('btn-nav-pending-balance');
+  if (btnPendingNav) {
+    btnPendingNav.addEventListener('click', () => {
+      if (window.UI && window.UI.switchView) {
+        window.UI.switchView('view-orders');
+      }
+      filterChips.forEach(c => {
+        const isPending = c.getAttribute('data-status') === 'saldo-pendiente';
+        c.className = `filter-chip px-3 py-1.5 rounded-lg bg-[#F0EAE1] text-[#5A4A42] hover:bg-[#E5DDD2] transition-colors ${isPending ? 'flex items-center gap-1 font-semibold' : ''}`;
+      });
+      const pendingChip = document.querySelector('#orders-status-filters .filter-chip[data-status="saldo-pendiente"]');
+      if (pendingChip) {
+        pendingChip.className = 'filter-chip px-3 py-1.5 rounded-lg bg-cookie-500 text-white font-semibold transition-colors flex items-center gap-1';
+      }
+      triggerSearch();
+    });
+  }
 }
 
 function setupResetSeedHandler(storage) {
@@ -720,6 +741,16 @@ function refreshAllViews(storage) {
   if (counterEl) {
     const activas = orders.filter(o => o.status !== 'Entregado' && o.status !== 'Cancelado');
     counterEl.textContent = `${activas.length} pedido${activas.length === 1 ? '' : 's'} activo${activas.length === 1 ? '' : 's'}`;
+  }
+
+  const pendingBadgeEl = document.getElementById('pending-balance-badge');
+  if (pendingBadgeEl) {
+    const metricas = (window.Orders && window.Orders.obtenerMetricasSaldoPendiente)
+      ? window.Orders.obtenerMetricasSaldoPendiente(orders)
+      : (typeof OrdersModule !== 'undefined' && OrdersModule.obtenerMetricasSaldoPendiente
+        ? OrdersModule.obtenerMetricasSaldoPendiente(orders)
+        : { cantidad: 0, totalSaldo: 0 });
+    pendingBadgeEl.textContent = metricas.cantidad;
   }
 
   if (window.UI && window.UI.renderPlanningView) {

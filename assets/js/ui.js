@@ -422,6 +422,7 @@ function renderBlock(containerId, countId, items, categoria, emptyMsg) {
 function renderAllOrdersView(orders = [], options = {}) {
   if (typeof document === 'undefined') return;
 
+  const format = OrdersHelper ? OrdersHelper.formatearMoneda : m => `$${m}`;
   const searchInput = document.getElementById('search-input');
   const searchText = options.searchText !== undefined ? options.searchText : (searchInput ? searchInput.value : '');
 
@@ -436,7 +437,12 @@ function renderAllOrdersView(orders = [], options = {}) {
   const countBadge = document.getElementById('orders-count-badge');
 
   if (countBadge) {
-    countBadge.textContent = `Mostrando ${sorted.length} pedido${sorted.length === 1 ? '' : 's'} (de ${orders.length} en total)`;
+    if (statusFilter === 'saldo-pendiente') {
+      const metricas = OrdersHelper && OrdersHelper.obtenerMetricasSaldoPendiente ? OrdersHelper.obtenerMetricasSaldoPendiente(filtered) : { totalSaldo: 0 };
+      countBadge.textContent = `Mostrando ${sorted.length} pedido${sorted.length === 1 ? '' : 's'} con saldo pendiente (Total por cobrar: ${format(metricas.totalSaldo)})`;
+    } else {
+      countBadge.textContent = `Mostrando ${sorted.length} pedido${sorted.length === 1 ? '' : 's'} (de ${orders.length} en total)`;
+    }
   }
 
   if (!container) return;

@@ -46,3 +46,4 @@ test('T3.1: generarTicketEntregaHtml incluye el logotipo oficial en el comproban
   const ticketHtml = receiptModule.generarTicketEntregaHtml(sampleOrder);
   assert.match(ticketHtml, /<img\s+[^>]*src=["']assets\/img\/logo\.jpg["']/i, 'El ticket generado debe contener la imagen del logotipo');
 });
+

@@ -36,3 +36,4 @@
   4. Verificar que `manifest.json` referencia `assets/img/logo.jpg`.
   5. Verificar que `generarTicketEntregaHtml` incluye el logotipo en el HTML generado.
 - Ejecutar la suite completa para asegurar 0 regresiones en las 49 pruebas existentes.
+

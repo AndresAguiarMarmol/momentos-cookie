@@ -130,7 +130,11 @@ function filtrarPedidos(pedidos = [], { textoBusqueda = '', estadoFiltro = 'todo
 
   return pedidos.filter(pedido => {
     // Filtro por estado
-    if (estadoFiltro && estadoFiltro !== 'todos' && pedido.status !== estadoFiltro) {
+    if (estadoFiltro === 'saldo-pendiente') {
+      if (!tieneSaldoPendiente(pedido)) {
+        return false;
+      }
+    } else if (estadoFiltro && estadoFiltro !== 'todos' && pedido.status !== estadoFiltro) {
       return false;
     }
 
@@ -435,6 +439,48 @@ function consolidarPedidosPorClienteYFecha(pedidos = []) {
   return resultado;
 }
 
+/**
+ * Determina si una orden tiene saldo pendiente de cobro.
+ * Retorna true si la orden no está cancelada y aún tiene saldo por cobrar o estado no completado.
+ */
+function tieneSaldoPendiente(order) {
+  if (!order || order.status === 'Cancelado') return false;
+  if (order.payment?.status === 'Pagado total') return false;
+
+  const total = Number(order.payment?.total ?? order.payment?.totalAmount) || 0;
+  const abono = Number(order.payment?.depositAmount ?? order.payment?.abono) || 0;
+  const saldo = Math.max(0, total - abono);
+
+  if (saldo <= 0 && order.payment?.status === 'Pagado total') return false;
+  return saldo > 0 || order.payment?.status === 'Pendiente' || order.payment?.status === 'Abono/Seña';
+}
+
+/**
+ * Filtra una colección de órdenes retornando únicamente las que tienen saldo pendiente.
+ */
+function filtrarPedidosConSaldoPendiente(pedidos) {
+  if (!Array.isArray(pedidos)) return [];
+  return pedidos.filter(tieneSaldoPendiente);
+}
+
+/**
+ * Obtiene la cantidad de pedidos con saldo pendiente y el total acumulado por cobrar.
+ */
+function obtenerMetricasSaldoPendiente(pedidos) {
+  if (!Array.isArray(pedidos)) return { cantidad: 0, totalSaldo: 0 };
+  const pendientes = pedidos.filter(tieneSaldoPendiente);
+  const totalSaldo = pendientes.reduce((acc, ord) => {
+    const total = Number(ord.payment?.total ?? ord.payment?.totalAmount) || 0;
+    const abono = Number(ord.payment?.depositAmount ?? ord.payment?.abono) || 0;
+    return acc + Math.max(0, total - abono);
+  }, 0);
+
+  return {
+    cantidad: pendientes.length,
+    totalSaldo
+  };
+}
+
 // Exportación dual: CommonJS para pruebas Node.js y objeto global para el navegador
 const OrdersModule = {
   calcularSubtotal,
@@ -450,7 +496,10 @@ const OrdersModule = {
   normalizeOrder,
   calcularTotalesPedido,
   formatearResumenItems,
-  consolidarPedidosPorClienteYFecha
+  consolidarPedidosPorClienteYFecha,
+  tieneSaldoPendiente,
+  filtrarPedidosConSaldoPendiente,
+  obtenerMetricasSaldoPendiente
 };
 
 if (typeof module !== 'undefined' && module.exports) {

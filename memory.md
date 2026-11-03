@@ -103,10 +103,20 @@ Valores permitidos para estados:
 - **Gestión Multi-Ítem por Pedido (Spec 005):** Cada pedido permite registrar $N$ artículos heterogéneos (mezclando galletas individuales de distintos sabores y combos especiales con kits de pintura). Al pulsar "＋ Agregar otro ítem", el sistema copia por defecto el tipo del ítem precedente para acelerar la carga repetitiva.
 - **Consolidación Automática por Cliente y Fecha (Spec 006):** Múltiples órdenes destinadas al mismo cliente en la misma fecha de entrega se fusionan en una sola orden multi-ítem unificada mediante `consolidarPedidosPorClienteYFecha`. Normaliza nombres de clientes tolerando tildes, barras y variantes tipográficas, fusiona ítems, suma totales financieros y abonos, manteniendo cero pérdida de información y recalculando el estado de pago.
 - **Logotipo Oficial e Identidad de Marca (Spec 007):** Imagen de marca oficial alojada en `assets/img/logo.jpg` e integrada en el `<header>` principal, favicon de la pestaña del navegador, archivo PWA `manifest.json` y en la cabecera de los comprobantes/tickets imprimibles de entrega (`receipt.js`), sustituyendo el ícono genérico previo por la ilustración auténtica del taller.
+- **Acceso Rápido y Filtrado por Saldo Pendiente (Spec 008):** Botón `#btn-nav-pending-balance` en la barra de navegación principal con badge dinámico de conteo de pedidos con deuda (`#pending-balance-badge`) y chip de filtro en `index.html` con `data-status="saldo-pendiente"`. Al activarse, navega y filtra reactivamente solo los pedidos con saldo por cobrar, exhibiendo en el badge de resumen la cantidad y el monto acumulado por cobrar.
 
 ---
 
 ## 3. Historial de cambios
+
+### 2026-11-03 — Implementación de Spec 008: Botón de Acceso Rápido y Filtro para Pedidos con Saldo Pendiente
+- **T1 a T3 completadas:** Implementación del botón de cobranza rápida y filtro dedicado para pedidos con saldo por cobrar.
+  1. En [assets/js/orders.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/orders.js): funciones puras `tieneSaldoPendiente`, `filtrarPedidosConSaldoPendiente` y `obtenerMetricasSaldoPendiente`. Integración del modo `saldo-pendiente` en `filtrarPedidos`.
+  2. En [index.html](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/index.html): botón táctil `#btn-nav-pending-balance` en la barra de navegación principal con badge reactivo `#pending-balance-badge`, y chip `Con Saldo Pendiente` en la barra de filtros de pedidos.
+  3. En [assets/js/ui.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/ui.js) y [assets/js/main.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/main.js): cableado del botón de navegación para cambiar de vista y activar el filtro, cálculo dinámico del total adeudado en `#orders-count-badge` y refresco automático de métricas tras actualizaciones de pago.
+- Suite de pruebas unitarias ampliada a **60/60 pruebas pasando al 100% en verde con `node --test`** (suite `tests/pending_balance_filter.test.js`).
+- Verificación visual interactiva exitosa en Chrome mediante DevTools MCP.
+- Especificación [specs/008-filtro-saldo-pendiente/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/008-filtro-saldo-pendiente/spec.md) marcada como `implementada`.
 
 ### 2026-11-03 — Implementación de Spec 007: Logotipo Oficial e Identidad Visual de la Aplicación
 - **T1 a T4 completadas:** Integración del archivo de imagen oficial de Momentos Cookie en todos los puntos de contacto visual clave.
