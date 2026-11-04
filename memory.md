@@ -106,11 +106,19 @@ Valores permitidos para estados:
 - **Acceso Rápido y Filtrado por Saldo Pendiente (Spec 008):** Botón `#btn-nav-pending-balance` en la barra de navegación principal con badge dinámico de conteo de pedidos con deuda (`#pending-balance-badge`) y chip de filtro en `index.html` con `data-status="saldo-pendiente"`. Al activarse, navega y filtra reactivamente solo los pedidos con saldo por cobrar, exhibiendo en el badge de resumen la cantidad y el monto acumulado por cobrar.
 - **Soporte PWA Standalone para iOS / iPhone (Spec 009):** Metaetiquetas de Web App de Apple (`apple-mobile-web-app-capable="yes"`, `apple-mobile-web-app-status-bar-style="default"`, `apple-mobile-web-app-title="Momentos Cookie"` y `apple-touch-icon`), directiva `viewport-fit=cover`, reglas CSS de áreas seguras (`env(safe-area-inset-*)`), Service Worker `momentos-cookie-v2` para funcionamiento offline completo y guía accesible de instalación para iPhone en el modal de ajustes.
 - **Títulos y Tipografía Responsiva (Spec 010):** Adaptación bidireccional de títulos mediante variantes `sm:hidden` para vista móvil (iPhone/pantallas reducidas) y `hidden sm:inline` para PC. Aplica a botones de la barra de navegación, encabezados de semáforo de entrega (Atrasados, Hoy, Esta Semana), planilla de horneado y títulos de modales, asegurando lectura limpia y sin cortes sin alterar la lógica de negocio.
-- **Pie de Página (Footer) con Créditos de Autor y Canales de Contacto (Spec 011):** Elemento semántico `<footer>` ubicado al pie de `index.html` después de `</main>` con estilo artesanal cálido. Contiene los créditos `"Análisis/Diseño de Andres Aguiar V 26.11 Santiago de Chile (Noviembre 2026)"` con enlaces táctiles directos a llamada (`tel:+56933395447`) y WhatsApp (`https://wa.me/56933395447`), adaptado tanto a pantallas móviles (iPhone) como a computadoras de escritorio.
+- **Pie de Página (Footer) con Créditos de Autor y Canales de Contacto (Specs 011 y 012):** Elemento semántico `<footer>` ubicado al pie de `index.html` después de `</main>` con estilo artesanal cálido. Contiene los créditos `"Análisis/Diseño de Andres Aguiar V 2611.04 Santiago de Chile Noviembre 2026"` con versión fechada AAMM.DD y enlaces táctiles directos a llamada (`tel:+56933395447`) y WhatsApp (`https://wa.me/56933395447`), adaptado tanto a pantallas móviles (iPhone) como a computadoras de escritorio.
 
 ---
 
 ## 3. Historial de cambios
+
+### 2026-11-04 — Implementación de Spec 012: Actualización de Formato de Fecha en Pie de Página
+- **T1 a T3 completadas:** Ajuste del formato de versión y fecha en el pie de página de la aplicación.
+  1. En [index.html](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/index.html): actualización del texto en `<footer>` a `"Análisis/Diseño de Andres Aguiar V 2611.04 Santiago de Chile Noviembre 2026"`, sustituyendo `AA`, `MM` y `DD` por `2611.04` y `Mes y Año Actual` por `Noviembre 2026`.
+  2. Enlaces interactivos a llamada telefónica (`tel:+56933395447`) y WhatsApp (`https://wa.me/56933395447`) preservados intactos.
+- Suite de pruebas unitarias actualizada: **73/73 pruebas pasando en verde con `node --test`** ([tests/footer.test.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/tests/footer.test.js)).
+- Cero alteración en lógica de pedidos, persistencia ni cálculos contables.
+- Especificación [specs/012-footer-actualizacion-formato-fecha/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/012-footer-actualizacion-formato-fecha/spec.md) marcada como `implementada`.
 
 ### 2026-11-04 — Implementación de Spec 011: Pie de Página (Footer) con Créditos de Autor y Contacto
 - **T1 a T3 completadas:** Implementación de pie de página permanente y accesible con autoría técnica y enlaces de comunicación rápida.

@@ -32,3 +32,4 @@
   - **Mitigación:** El footer se ubica dentro del flujo normal del documento al final de la página. Los modales usan `<dialog class="modal-backdrop">` con `position: fixed` / overlay nativo del navegador, por lo que no sufren interferencia. El toast tiene `fixed bottom-4 right-4 z-50`.
 - **Riesgo:** Desbordamiento horizontal en pantallas pequeñas de iPhone.
   - **Mitigación:** Usar `flex-wrap justify-center text-center break-words` y espaciados proporcionados.
+
