@@ -19,3 +19,4 @@
    - Ejecutar `node --test tests/footer.test.js` y verificar paso a verde.
 3. **Fase de Integración y Regresión:**
    - Ejecutar la suite completa `node --test tests/*.test.js` asegurando 100% de éxito en todos los tests.
+

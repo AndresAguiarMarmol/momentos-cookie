@@ -46,3 +46,20 @@ test('T1.3: El <footer> contiene enlaces interactivos a Contacto telefónico y W
   );
   assert.match(footerHtml, /Whatsapp/i, 'Debe incluir la etiqueta Whatsapp');
 });
+
+test('T1.4: El pie de página es un valor fijo estático en index.html y no se manipula dinámicamente en runtime por JS', () => {
+  const jsFiles = ['assets/js/main.js', 'assets/js/ui.js', 'assets/js/orders.js', 'assets/js/storage.js', 'assets/js/production.js', 'assets/js/receipt.js'];
+  for (const relPath of jsFiles) {
+    const content = fs.readFileSync(path.join(ROOT_DIR, relPath), 'utf-8');
+    assert.doesNotMatch(
+      content,
+      /document\.querySelector\(['"]footer['"]\)/i,
+      `${relPath} no debe manipular dinámicamente el footer en tiempo de ejecución`
+    );
+    assert.doesNotMatch(
+      content,
+      /2611\.04/i,
+      `${relPath} no debe inyectar la versión estática del footer en runtime`
+    );
+  }
+});
