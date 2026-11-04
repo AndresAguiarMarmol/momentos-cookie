@@ -72,3 +72,4 @@
   2. Verificar que los bloques de semáforo contienen las variantes compactas y extendidas.
   3. Verificar que los encabezados de modales contienen clases responsivas y variantes compactas.
   4. Ejecutar la suite completa para asegurar 0 regresiones funcionales.
+
