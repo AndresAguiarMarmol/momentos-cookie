@@ -450,9 +450,125 @@ function renderAllOrdersView(orders = [], options = {}) {
   if (sorted.length === 0) {
     container.innerHTML = '';
     if (emptyState) emptyState.classList.remove('hidden');
-  } else {
-    if (emptyState) emptyState.classList.add('hidden');
-    container.innerHTML = sorted.map(order => renderOrderCardHtml(order)).join('');
+    return;
+  }
+
+  if (emptyState) emptyState.classList.add('hidden');
+
+  const hoy = options.hoy || new Date();
+  const periodos = OrdersHelper && typeof OrdersHelper.agruparPedidosPorPeriodo === 'function'
+    ? OrdersHelper.agruparPedidosPorPeriodo(sorted, hoy)
+    : {
+        periodoNombre: 'Período Actual',
+        periodoActual: sorted,
+        proximos: [],
+        anteriores: []
+      };
+
+  let html = '';
+
+  // 1. Bloque: Período Actual (Prioridad)
+  const countActual = (periodos.periodoActual || []).length;
+  html += `
+    <div class="period-block period-current space-y-3" data-period="current">
+      <div class="flex items-center justify-between pb-2 border-b border-[#E8E1D7]">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-cookie-100 flex items-center justify-center text-cookie-700 shadow-2xs">
+            <i data-lucide="calendar-check-2" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-sm sm:text-base text-cocoa-900">${periodos.periodoNombre}</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-cookie-500 text-white shadow-2xs uppercase tracking-wider">
+                Prioridad Actual
+              </span>
+            </div>
+            <p class="text-[11px] text-[#7A6A60]">Entregas comprometidas para el mes en curso</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${countActual > 0 ? 'bg-cookie-100 text-cookie-900 border border-cookie-200' : 'bg-slate-100 text-slate-600'}">
+          ${countActual} ${countActual === 1 ? 'pedido' : 'pedidos'}
+        </span>
+      </div>
+
+      ${countActual > 0
+        ? `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+             ${periodos.periodoActual.map(order => renderOrderCardHtml(order)).join('')}
+           </div>`
+        : `<div class="p-6 text-center bg-white rounded-xl border border-dashed border-[#E0D7CC] text-xs text-[#8C7B72]">
+             No se registran pedidos para el período actual (${periodos.periodoNombre}).
+           </div>`
+      }
+    </div>
+  `;
+
+  // 2. Bloque: Próximos Períodos
+  if (periodos.proximos && periodos.proximos.length > 0) {
+    const countProximos = periodos.proximos.length;
+    html += `
+      <div class="period-block period-upcoming space-y-3 pt-2" data-period="upcoming">
+        <div class="flex items-center justify-between pb-2 border-b border-[#E8E1D7]">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-700 shadow-2xs border border-sky-100">
+              <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-sm sm:text-base text-cocoa-900">Próximos Períodos</h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200">
+                  Futuro
+                </span>
+              </div>
+              <p class="text-[11px] text-[#7A6A60]">Pedidos con fecha de entrega posterior al mes en curso</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-900 border border-sky-200">
+            ${countProximos} ${countProximos === 1 ? 'pedido' : 'pedidos'}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${periodos.proximos.map(order => renderOrderCardHtml(order)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 3. Bloque: Períodos Anteriores / Histórico
+  if (periodos.anteriores && periodos.anteriores.length > 0) {
+    const countAnteriores = periodos.anteriores.length;
+    html += `
+      <div class="period-block period-history space-y-3 pt-2" data-period="history">
+        <div class="flex items-center justify-between pb-2 border-b border-[#E8E1D7]">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-800 shadow-2xs border border-amber-200/60">
+              <i data-lucide="history" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-sm sm:text-base text-cocoa-900">Períodos Anteriores</h3>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                  Histórico
+                </span>
+              </div>
+              <p class="text-[11px] text-[#7A6A60]">Pedidos archivados de meses previos</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
+            ${countAnteriores} ${countAnteriores === 1 ? 'pedido' : 'pedidos'}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${periodos.anteriores.map(order => renderOrderCardHtml(order)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+  if (typeof window !== 'undefined' && window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
   }
 }
 

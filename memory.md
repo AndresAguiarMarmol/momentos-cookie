@@ -107,10 +107,26 @@ Valores permitidos para estados:
 - **Soporte PWA Standalone para iOS / iPhone (Spec 009):** Metaetiquetas de Web App de Apple (`apple-mobile-web-app-capable="yes"`, `apple-mobile-web-app-status-bar-style="default"`, `apple-mobile-web-app-title="Momentos Cookie"` y `apple-touch-icon`), directiva `viewport-fit=cover`, reglas CSS de áreas seguras (`env(safe-area-inset-*)`), Service Worker `momentos-cookie-v2` para funcionamiento offline completo y guía accesible de instalación para iPhone en el modal de ajustes.
 - **Títulos y Tipografía Responsiva (Spec 010):** Adaptación bidireccional de títulos mediante variantes `sm:hidden` para vista móvil (iPhone/pantallas reducidas) y `hidden sm:inline` para PC. Aplica a botones de la barra de navegación, encabezados de semáforo de entrega (Atrasados, Hoy, Esta Semana), planilla de horneado y títulos de modales, asegurando lectura limpia y sin cortes sin alterar la lógica de negocio.
 - **Pie de Página (Footer) con Créditos de Autor y Canales de Contacto (Specs 011 y 012):** Elemento semántico `<footer>` ubicado al pie de `index.html` después de `</main>` con estilo artesanal cálido. Contiene los créditos `"Análisis/Diseño de Andres Aguiar V 2611.04 Santiago de Chile Noviembre 2026"` con versión fechada AAMM.DD y enlaces táctiles directos a llamada (`tel:+56933395447`) y WhatsApp (`https://wa.me/56933395447`), adaptado tanto a pantallas móviles (iPhone) como a computadoras de escritorio. **Principio arquitectónico:** El valor del footer es estrictamente fijo/estático, generado como un valor constante al publicar la aplicación; no se calcula dinámicamente con JavaScript en tiempo de ejecución y permanece congelado hasta la siguiente modificación y regeneración de la app.
+- **Separación de Pedidos por Períodos en Todos los Pedidos (Spec 013):**
+  - En la vista "Todos los Pedidos" (`#view-orders`, `renderAllOrdersView`), los pedidos se agrupan y estructuran en bloques visuales independientes por período temporal mediante `agruparPedidosPorPeriodo(pedidos, fechaReferencia)` en `assets/js/orders.js`:
+    1. **Período Actual (`periodoNombre` - mes en curso):** Ubicado en la primera posición con prioridad, destacado con insignia `Prioridad Actual`, icono `calendar-check-2` y contador individual de pedidos.
+    2. **Próximos Períodos:** Despliega pedidos con fecha de entrega posterior al mes en curso con icono `calendar-clock` y contador.
+    3. **Períodos Anteriores / Histórico:** Despliega pedidos archivados de meses previos con icono `history` y contador.
+  - Cada bloque encapsula una grilla responsiva de tarjetas (`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4`) y mantiene los pedidos ordenados cronológicamente por fecha/hora de entrega.
+  - Plena compatibilidad reactiva con la búsqueda textual `#search-input` y los chips de filtro por estado (`#orders-status-filters`), incluyendo el filtro de saldo pendiente. Si no hay pedidos en ningún bloque, se despliega `#orders-empty-state`.
 
 ---
 
 ## 3. Historial de cambios
+
+### 2026-11-08 — Implementación de Spec 013: Separación de Pedidos por Períodos con Prioridad en el Período Actual
+- **T1 a T4 completadas:** Agrupación y separación visual de pedidos en la vista "Todos los Pedidos".
+  1. En [assets/js/orders.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/orders.js): implementada y exportada la función pura `agruparPedidosPorPeriodo(pedidos, fechaReferencia)` que clasifica los pedidos en `periodoActual`, `proximos` y `anteriores`, tolerante a valores nulos y con ordenamiento cronológico interno.
+  2. En [assets/js/ui.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/assets/js/ui.js): actualizada la función `renderAllOrdersView` para generar los bloques de período con sus encabezados estilizados, insignia de `Prioridad Actual`, contadores reactivos e íconos Lucide.
+  3. En [index.html](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/index.html): actualizado el contenedor `#all-orders-container` a `space-y-6` para alojar fluidamente los bloques de período.
+  4. En [tests/order_periods.test.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/tests/order_periods.test.js): creada la suite de pruebas unitarias verificando clasificación temporal, priorización, casos de borde y renderizado DOM.
+- Suite de pruebas unitarias ampliada a **79/79 pruebas pasando al 100% en verde con `node --test`**.
+- Especificación [specs/013-separar-pedidos-por-periodos/spec.md](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/specs/013-separar-pedidos-por-periodos/spec.md) marcada como `implementada`.
 
 ### 2026-11-04 — Confirmación Arquitectónica: Inmutabilidad Estática del Pie de Página
 - **Garantía de inmutabilidad estática:** Se formalizó la regla arquitectónica y se agregó prueba unitaria automatizada en [tests/footer.test.js](file:///d:/Carpetas/Desarrollos/Desarrollos%20WEB/Momentos%20Cookie/tests/footer.test.js) (T1.4) verificando que el pie de página reside como valor fijo en `index.html` y que ningún módulo JavaScript (`assets/js/*.js`) altera ni recalcula dinámicamente su contenido en tiempo de ejecución.

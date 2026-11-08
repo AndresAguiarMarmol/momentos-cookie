@@ -69,7 +69,8 @@ function clasificarPedidoPorUrgencia(fechaEntrega, horaEntrega, estadoPedido, ho
 }
 
 function ordenarPedidosPorFecha(pedidos = []) {
-  return [...pedidos].sort((a, b) => {
+  const lista = Array.isArray(pedidos) ? pedidos : [];
+  return [...lista].sort((a, b) => {
     const fechaA = (a.dates && a.dates.deliveryDate) || '9999-12-31';
     const horaA = (a.dates && a.dates.deliveryTime && a.dates.deliveryTime.trim()) || '23:59';
     const fechaB = (b.dates && b.dates.deliveryDate) || '9999-12-31';
@@ -95,7 +96,8 @@ function agruparPedidosPorSemaforo(pedidos = [], hoy = new Date()) {
     proximas: []
   };
 
-  const ordenados = ordenarPedidosPorFecha(pedidos);
+  const lista = Array.isArray(pedidos) ? pedidos : [];
+  const ordenados = ordenarPedidosPorFecha(lista);
 
   for (const pedido of ordenados) {
     const fecha = (pedido.dates && pedido.dates.deliveryDate) || '';
@@ -481,6 +483,60 @@ function obtenerMetricasSaldoPendiente(pedidos) {
   };
 }
 
+/**
+ * Agrupa los pedidos en 3 bloques temporales por período (mes calendario):
+ * - periodoActual: Pedidos cuya entrega corresponde al mes en curso (con prioridad).
+ * - proximos: Pedidos cuya entrega corresponde a meses futuros.
+ * - anteriores: Pedidos cuya entrega corresponde a meses pasados / histórico.
+ * @param {Array} pedidos - Lista de pedidos
+ * @param {Date} [fechaReferencia=new Date()] - Fecha base para determinar el período actual
+ * @returns {{ periodoActual: Array, proximos: Array, anteriores: Array, currentPeriodKey: string, periodoNombre: string }}
+ */
+function agruparPedidosPorPeriodo(pedidos = [], fechaReferencia = new Date()) {
+  const ref = fechaReferencia instanceof Date && !isNaN(fechaReferencia) ? fechaReferencia : new Date();
+  const yRef = ref.getFullYear();
+  const mRef = ref.getMonth() + 1;
+  const currentPeriodKey = `${yRef}-${String(mRef).padStart(2, '0')}`;
+
+  const meses = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+  const periodoNombre = `${meses[mRef - 1]} ${yRef}`;
+
+  const grupos = {
+    currentPeriodKey,
+    periodoNombre,
+    periodoActual: [],
+    proximos: [],
+    anteriores: []
+  };
+
+  const lista = Array.isArray(pedidos) ? pedidos : [];
+  const ordenados = ordenarPedidosPorFecha(lista);
+
+  for (const pedido of ordenados) {
+    const rawFecha = (pedido.dates && pedido.dates.deliveryDate) ||
+                     (pedido.dates && pedido.dates.createdAt && pedido.dates.createdAt.slice(0, 10)) ||
+                     '';
+    if (!rawFecha) {
+      grupos.periodoActual.push(pedido);
+      continue;
+    }
+
+    const orderPeriodKey = rawFecha.slice(0, 7);
+    if (orderPeriodKey === currentPeriodKey) {
+      grupos.periodoActual.push(pedido);
+    } else if (orderPeriodKey > currentPeriodKey) {
+      grupos.proximos.push(pedido);
+    } else {
+      grupos.anteriores.push(pedido);
+    }
+  }
+
+  return grupos;
+}
+
 // Exportación dual: CommonJS para pruebas Node.js y objeto global para el navegador
 const OrdersModule = {
   calcularSubtotal,
@@ -488,6 +544,7 @@ const OrdersModule = {
   clasificarPedidoPorUrgencia,
   ordenarPedidosPorFecha,
   agruparPedidosPorSemaforo,
+  agruparPedidosPorPeriodo,
   normalizarTexto,
   filtrarPedidos,
   generarIdPedido,
