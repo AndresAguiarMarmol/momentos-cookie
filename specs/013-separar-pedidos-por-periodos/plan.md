@@ -30,3 +30,4 @@ Para cumplir con "No cambiar lo que funciona" y preservar la modularidad estrict
 - Actualizar `memory.md` (Sección 2 y Sección 3).
 - Actualizar `specs/013-separar-pedidos-por-periodos/tasks.md` y `spec.md`.
 - Sincronizar repositorio en GitHub (`main`).
+

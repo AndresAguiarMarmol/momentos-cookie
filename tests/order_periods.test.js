@@ -205,3 +205,4 @@ test('T2.2: renderAllOrdersView muestra el estado vacío si la lista de pedidos 
 
   global.document = originalDocument;
 });
+
